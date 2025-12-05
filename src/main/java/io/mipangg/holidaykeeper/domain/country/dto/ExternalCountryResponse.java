@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 public record ExternalCountryResponse(
         @NotBlank
         String countryCode,
+
         @NotBlank
         String name
 ) {
