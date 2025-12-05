@@ -1,5 +1,7 @@
-package io.mipangg.holidaykeeper.entity;
+package io.mipangg.holidaykeeper.domain.holiday.entity;
 
+import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.holidayType.entity.HolidayType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
