@@ -1,7 +1,6 @@
 package io.mipangg.holidaykeeper.domain.country.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -9,8 +8,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.mipangg.holidaykeeper.domain.country.dto.ExternalCountryResponse;
+import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,32 +50,33 @@ class CountryServiceTests {
     }
 
     @Test
-    @DisplayName("모든 countryCode 리스트를 조회한다")
-    void getAllCountryCodes_success_test() {
+    @DisplayName("모든 country 정보를 map 형태로 반환한다")
+    void findAll_success_test() {
 
-        List<String> countryCodes = List.of("BR", "CA", "KR", "JP");
+        List<Country> countries = List.of(
+                Country.builder()
+                        .code("BR")
+                        .name("Brazil")
+                        .build(),
+                Country.builder()
+                        .code("CA")
+                        .name("Canada")
+                        .build(),
+                Country.builder()
+                        .code("KR")
+                        .name("South Korea")
+                        .build()
+        );
 
-        when(countryRepository.findAllCodes()).thenReturn(countryCodes);
+        when(countryRepository.findAll()).thenReturn(countries);
 
-        List<String> resp = countryService.getAllCountryCodes();
+        Map<String, Country> allCountries = countryService.findAll();
 
-        verify(countryRepository, times(1)).findAllCodes();
-        assertThat(resp).containsExactlyInAnyOrder("BR", "CA", "KR", "JP");
+        verify(countryRepository, times(1)).findAll();
 
-    }
-
-    @Test
-    @DisplayName("모든 countryCode 리스트 조회 시 빈 리스트가 반환되면 에러가 발생한다")
-    void getAllCountryCodes_fail_test() {
-
-        when(countryRepository.findAllCodes()).thenReturn(List.of());
-
-        assertThatThrownBy(
-                () -> {
-                    countryService.getAllCountryCodes();
-                }
-        ).isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("빈 Country code list 입니다.");
+        assertThat(allCountries.get("BR")).isEqualTo(countries.get(0));
+        assertThat(allCountries.get("CA")).isEqualTo(countries.get(1));
+        assertThat(allCountries.get("KR")).isEqualTo(countries.get(2));
 
     }
 }

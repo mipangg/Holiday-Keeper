@@ -2,7 +2,9 @@ package io.mipangg.holidaykeeper.domain.country.service;
 
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,15 +32,14 @@ public class CountryService {
         });
     }
 
-    public List<String> getAllCountryCodes() {
-        List<String> allCountryCodes = countryRepository.findAllCodes();
+    public Map<String, Country> findAll() {
+        Map<String, Country> allCountries = new HashMap<>();
 
-        if (allCountryCodes.isEmpty()) {
-            // TODO: exception 추가 처리 필요
-            throw new IllegalArgumentException("빈 Country code list 입니다.");
-        }
+        countryRepository.findAll().forEach(country -> {
+            allCountries.put(country.getCode(), country);
+        });
 
-        return allCountryCodes;
+        return allCountries;
     }
 
 }
