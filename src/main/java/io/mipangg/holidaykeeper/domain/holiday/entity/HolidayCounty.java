@@ -21,7 +21,7 @@ public class HolidayCounty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "holiday_id", nullable = false)
