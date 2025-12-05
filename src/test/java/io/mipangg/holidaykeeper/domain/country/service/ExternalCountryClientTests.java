@@ -17,7 +17,7 @@ class ExternalCountryClientTests {
     private ExternalCountryClient externalCountryClient;
 
     @Test
-    @DisplayName("외부 api에서 country 목록을 잘 불러올 수 있다")
+    @DisplayName("외부 api에서 country 목록을 불러올 수 있다")
     void getCountries_success_test() {
 
         List<ExternalCountryResponse> countries = externalCountryClient.getCountries();
