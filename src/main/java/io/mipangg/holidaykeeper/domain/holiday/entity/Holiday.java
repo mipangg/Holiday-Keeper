@@ -17,10 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Builder
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -48,11 +50,5 @@ public class Holiday {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id", nullable = false)
     private Country country;
-
-    @OneToMany(
-            mappedBy = "holiday", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL, orphanRemoval = true
-    )
-    private List<HolidayType> holidayTypes = new ArrayList<>();
 
 }
