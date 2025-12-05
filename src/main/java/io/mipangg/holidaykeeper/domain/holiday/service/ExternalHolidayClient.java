@@ -1,6 +1,5 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
-import io.mipangg.holidaykeeper.domain.country.dto.ExternalCountryResponse;
 import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
