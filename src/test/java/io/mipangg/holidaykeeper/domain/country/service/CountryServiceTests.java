@@ -1,5 +1,7 @@
 package io.mipangg.holidaykeeper.domain.country.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -46,4 +48,33 @@ class CountryServiceTests {
 
     }
 
+    @Test
+    @DisplayName("모든 countryCode 리스트를 조회한다")
+    void getAllCountryCodes_success_test() {
+
+        List<String> countryCodes = List.of("BR", "CA", "KR", "JP");
+
+        when(countryRepository.findAllCodes()).thenReturn(countryCodes);
+
+        List<String> resp = countryService.getAllCountryCodes();
+
+        verify(countryRepository, times(1)).findAllCodes();
+        assertThat(resp).containsExactlyInAnyOrder("BR", "CA", "KR", "JP");
+
+    }
+
+    @Test
+    @DisplayName("모든 countryCode 리스트 조회 시 빈 리스트가 반환되면 에러가 발생한다")
+    void getAllCountryCodes_fail_test() {
+
+        when(countryRepository.findAllCodes()).thenReturn(List.of());
+
+        assertThatThrownBy(
+                () -> {
+                    countryService.getAllCountryCodes();
+                }
+        ).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("빈 Country code list 입니다.");
+
+    }
 }
