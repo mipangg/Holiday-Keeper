@@ -51,7 +51,6 @@ public class HolidayController {
     @Operation(summary = "재동기화")
     @ApiResponse(responseCode = "200", description = "특정 연도의 국가 공휴일 목록 덮어쓰기 성공")
     @ApiResponse(responseCode = "400", description = "invalid value")
-    @ApiResponse(responseCode = "404", description = "not found")
     @PutMapping("/{year}/{countryCode}")
     @ResponseStatus(HttpStatus.OK)
     public void updateHolidays(
