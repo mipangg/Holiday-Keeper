@@ -1,6 +1,8 @@
 package io.mipangg.holidaykeeper.domain.holidayType.service;
 
 import static io.mipangg.holidaykeeper.util.TestUtils.getHoliday;
+import static io.mipangg.holidaykeeper.util.TestUtils.getHolidayCanada;
+import static java.util.List.of;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,7 +36,7 @@ class HolidayTypeServiceTests {
     @DisplayName("동일한 holidayType이 없으면 저장한다")
     void save_success_test() {
 
-        List<String> holidayTypes = List.of("Public");
+        List<String> holidayTypes = of("Public");
         Holiday holiday = getHoliday();
 
         when(holidayTypeRepository.findByTypeAndHoliday_Id(anyString(), anyLong()))
@@ -61,7 +63,7 @@ class HolidayTypeServiceTests {
                 .thenReturn(Optional.of(holidayType));
 
 
-        holidayTypeService.saveIfNotExists(List.of("Public"), holiday);
+        holidayTypeService.saveIfNotExists(of("Public"), holiday);
 
         verify(holidayTypeRepository, times(1))
                 .findByTypeAndHoliday_Id("Public",holiday.getId());

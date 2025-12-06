@@ -31,6 +31,7 @@ public class CountryService {
         });
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Country> findAll() {
         Map<String, Country> allCountries = new HashMap<>();
 
@@ -39,6 +40,15 @@ public class CountryService {
         });
 
         return allCountries;
+    }
+
+    @Transactional(readOnly = true)
+    public Country getByCode(String code) {
+        Country country = countryRepository.findByCode(code).orElseThrow(() -> {
+            throw new IllegalArgumentException(
+                    String.format("%s를 코드로 가진 country를 찾을 수 없습니다.", code));
+        });
+        return country;
     }
 
 }

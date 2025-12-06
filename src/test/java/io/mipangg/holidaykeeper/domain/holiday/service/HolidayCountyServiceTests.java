@@ -16,6 +16,7 @@ import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayCounty;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayCountyRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -82,6 +83,43 @@ class HolidayCountyServiceTests {
         verify(holidayCountyRepository, times(1))
                 .findByCountyAndHoliday(any(County.class), any(Holiday.class));
         verify(holidayCountyRepository, never()).save(any(HolidayCounty.class));
+
+    }
+
+    @Test
+    @DisplayName("holidays를 포함하고 있는 holidayCounty들을 삭제한다")
+    void deleteHolidayCounties_success_test() {
+
+        Country canada = getCountryCanada();
+
+        Holiday holiday = Holiday.builder()
+                .date(LocalDate.parse("2025-02-17"))
+                .localName("Louis Riel Day")
+                .name("Louis Riel Day")
+                .country(canada)
+                .isFixed(false)
+                .isGlobal(false)
+                .launchYear(null)
+                .build();
+
+        County county = County.builder()
+                .name("CA-MB")
+                .country(canada)
+                .build();
+
+        HolidayCounty holidayCounty = HolidayCounty.builder()
+                .holiday(holiday)
+                .county(county)
+                .build();
+
+        when(holidayCountyRepository.findByHoliday(holiday))
+                .thenReturn(List.of(holidayCounty));
+
+        holidayCountyService.deleteHolidayCounties(List.of(holiday));
+
+        verify(holidayCountyRepository, times(1)).findByHoliday(holiday);
+        verify(holidayCountyRepository, times(1))
+                .deleteAll(List.of(holidayCounty));
 
     }
 }

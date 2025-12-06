@@ -2,6 +2,7 @@ package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import static io.mipangg.holidaykeeper.util.TestUtils.getCountryCanada;
 import static io.mipangg.holidaykeeper.util.TestUtils.getHolidayCanada;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -92,6 +93,47 @@ class HolidayServiceTests {
                 .findByDateAndCountry(any(LocalDate.class), any(Country.class));
         verify(holidayRepository, times(6)).save(any(Holiday.class));
 
+    }
+
+    @Test
+    @DisplayName("year과 countryCode를 인자로 받아 특정 holiday 리스트를 삭제할 수 있다")
+    void deleteHolidays_success_test() {
+
+        int year = 2025;
+        String countryCode = "CA";
+        Country targetCountry = getCountryCanada();
+        List<Holiday> targetHolidays = List.of(getHolidayCanada());
+
+        when(countryService.getByCode(countryCode)).thenReturn(targetCountry);
+        when(holidayRepository.findByYearAndCountry(year, targetCountry))
+                .thenReturn(targetHolidays);
+
+        holidayService.deleteHolidays(year, countryCode);
+
+        verify(holidayRepository, times(1)).deleteAll(targetHolidays);
+
+    }
+
+    @Test
+    @DisplayName("year과 countryCode에 속하는 holiday 리스트가 없는데 삭제를 시도하면 예외가 발생한다")
+    void deleteHolidays_fail_test() {
+
+        int year = 2019;
+        String countryCode = "CA";
+
+        Country targetCountry = getCountryCanada();
+
+        when(countryService.getByCode(countryCode)).thenReturn(targetCountry);
+        when(holidayRepository.findByYearAndCountry(year, targetCountry)).thenReturn(List.of());
+
+        assertThatThrownBy(
+                () -> {
+                    holidayService.deleteHolidays(year, countryCode);
+                }
+        ).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(
+                        String.format("%d년 %s에 해당하는 holiday를 찾을 수 없습니다.", year, countryCode)
+                );
     }
 
 }
