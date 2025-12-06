@@ -31,6 +31,7 @@ public class CountryService {
         });
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Country> findAll() {
         Map<String, Country> allCountries = new HashMap<>();
 
@@ -41,6 +42,7 @@ public class CountryService {
         return allCountries;
     }
 
+    @Transactional(readOnly = true)
     public Country getByCode(String code) {
         Country country = countryRepository.findByCode(code).orElseThrow(() -> {
             throw new IllegalArgumentException(
