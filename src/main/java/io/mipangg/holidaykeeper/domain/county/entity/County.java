@@ -26,7 +26,7 @@ public class County {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 5)
+    @Column(nullable = false, length = 6)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)

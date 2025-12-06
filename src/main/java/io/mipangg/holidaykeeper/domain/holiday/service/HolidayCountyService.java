@@ -21,6 +21,10 @@ public class HolidayCountyService {
 
     @Transactional
     public void saveIfNotExists(List<String> countyStrs, Country country, Holiday holiday) {
+        if (countyStrs == null || countyStrs.isEmpty()) {
+            return;
+        }
+
         List<County> counties = countyService.saveIfNotExists(countyStrs, country);
 
         for (County county : counties) {

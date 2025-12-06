@@ -30,10 +30,10 @@ public class Holiday {
     @Column(nullable = false)
     private LocalDate date;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
     private String localName;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
     private String name;
 
     private boolean isFixed;
