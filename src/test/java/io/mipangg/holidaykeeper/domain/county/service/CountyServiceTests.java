@@ -1,5 +1,7 @@
 package io.mipangg.holidaykeeper.domain.county.service;
 
+import static io.mipangg.holidaykeeper.util.TestUtils.getCountryCanada;
+import static io.mipangg.holidaykeeper.util.TestUtils.getCountyStrsCanada;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -32,17 +34,8 @@ class CountyServiceTests {
     @DisplayName("이미 저장된 County가 없으면 저장한다")
     void saveIfNotExists_success_Test() {
 
-        List<String> counties = List.of(
-                "CA-AB",
-                "CA-BC",
-                "CA-NB",
-                "CA-ON",
-                "CA-SK"
-        );
-        Country country = Country.builder()
-                .code("CA")
-                .name("Canada")
-                .build();
+        List<String> counties = getCountyStrsCanada();
+        Country country = getCountryCanada();
 
         when(countyRepository.findByName(anyString())).thenReturn(Optional.empty());
 
@@ -57,10 +50,7 @@ class CountyServiceTests {
     @DisplayName("동일한 county가 이미 있으면 저장하지 않는다")
     void saveIfNotExists_test_case_county_already_exists() {
 
-        Country canada = Country.builder()
-                .code("CA")
-                .name("Canada")
-                .build();
+        Country canada = getCountryCanada();
         County county = County.builder()
                 .name("CA-AB")
                 .country(canada)

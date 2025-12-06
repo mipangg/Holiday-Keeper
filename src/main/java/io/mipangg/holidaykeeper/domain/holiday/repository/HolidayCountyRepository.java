@@ -1,8 +1,18 @@
 package io.mipangg.holidaykeeper.domain.holiday.repository;
 
+import io.mipangg.holidaykeeper.domain.county.entity.County;
+import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayCounty;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface HolidayCountyRepository extends JpaRepository<HolidayCounty, Long> {
 
+    @Query("select hc from HolidayCounty hc where hc.county = :county and hc.holiday = :holiday")
+    Optional<HolidayCounty> findByCountyAndHoliday(
+            @Param("county") County county,
+            @Param("holiday") Holiday holiday
+    );
 }

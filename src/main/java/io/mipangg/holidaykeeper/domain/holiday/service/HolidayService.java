@@ -2,6 +2,7 @@ package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.service.CountryService;
+import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
@@ -24,7 +25,7 @@ public class HolidayService {
 
     private final CountryService countryService;
     private final HolidayTypeService holidayTypeService;
-    private final CountyService countyService;
+    private final HolidayCountyService holidayCountyService;
 
     @Transactional
     public void syncHolidays() {
@@ -43,12 +44,9 @@ public class HolidayService {
                 externalHolidayClient.getHolidays(year, countryCode);
         for (ExternalHolidayResponse externalHoliday : externalHolidays) {
             Holiday holiday = saveHolidayIfNotExists(externalHoliday, country);
-            // TODO: County, HolidayCounty 저장
-            // List<String> counties, Country country -> County에 저장
-            // County, Holiday -> HolidayCounty에 저장
 
+            holidayCountyService.saveIfNotExists(externalHoliday.counties(), country, holiday);
             holidayTypeService.saveIfNotExists(externalHoliday.types(), holiday);
-
         }
     }
 
