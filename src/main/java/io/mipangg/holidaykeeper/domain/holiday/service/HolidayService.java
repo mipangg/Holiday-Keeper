@@ -6,6 +6,7 @@ import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
 import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
+import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,11 @@ public class HolidayService {
                 getExternalHolidays(year, countryCode, countryMap.get(countryCode));
             }
         }
+    }
+
+    @Transactional
+    public void deleteHolidays(int year, String countryCode) {
+
     }
 
     // 각각의 ExternalHolidayResponse를 처리
@@ -81,4 +87,5 @@ public class HolidayService {
 
         return years;
     }
+
 }

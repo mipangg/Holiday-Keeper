@@ -2,6 +2,7 @@ package io.mipangg.holidaykeeper.domain.holiday.controller;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,6 +32,20 @@ class HolidayControllerTests {
 
         verify(holidayService, times(1)).syncHolidays();
 
+    }
+    
+    @Test
+    @DisplayName("year과 countryCode를 인자로 받아 특정 연도와 국가의 공휴일 리스트를 삭제하고 204를 반환한다")
+    void deleteHolidays_should_return_204() throws Exception {
+
+        int year = 2025;
+        String countryCode = "KR";
+
+        mockMvc.perform(delete("/holidays/{year}/{countryCode}", year, countryCode))
+                .andExpect(status().isNoContent());
+
+        verify(holidayService, times(1)).deleteHolidays(year, countryCode);
+    
     }
 
 }
