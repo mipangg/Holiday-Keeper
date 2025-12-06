@@ -1,6 +1,9 @@
 package io.mipangg.holidaykeeper.domain.holidayType.service;
 
+import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
+import io.mipangg.holidaykeeper.domain.holidayType.entity.HolidayType;
 import io.mipangg.holidaykeeper.domain.holidayType.repository.HolidayTypeRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +13,19 @@ public class HolidayTypeService {
 
     private final HolidayTypeRepository holidayTypeRepository;
 
-    // List<String> Types, long holiday_id를 인자로 받음 -> repo에 없으면 저장
+    public void saveIfNotExists(List<String> holidayTypes, Holiday holiday) {
+        for (String holidayType : holidayTypes) {
+            holidayTypeRepository.findByTypeAndHoliday_Id(holidayType, holiday.getId())
+                    .orElseGet(() ->
+                            holidayTypeRepository.save(
+                                    HolidayType.builder()
+                                            .type(holidayType)
+                                            .holiday(holiday)
+                                            .build()
+                            )
+                    );
+
+        }
+    }
 
 }

@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -44,24 +43,24 @@ public class HolidayService {
         }
     }
 
-    private Holiday saveHolidayIfNotExists(ExternalHolidayResponse externalHoliday, Country country) {
+    private Holiday saveHolidayIfNotExists(ExternalHolidayResponse externalHoliday,
+            Country country) {
         LocalDate date = LocalDate.parse(externalHoliday.date());
-        Optional<Holiday> holidayOptional = holidayRepository.findByDateAndCountry(date, country);
-        if (holidayOptional.isPresent()) {
-            return holidayOptional.get();
-        }
+        return holidayRepository.findByDateAndCountry(date, country)
+                .orElseGet(() ->
+                        holidayRepository.save(
+                                Holiday.builder()
+                                        .date(date)
+                                        .localName(externalHoliday.localName())
+                                        .name(externalHoliday.name())
+                                        .isFixed(externalHoliday.fixed())
+                                        .isGlobal(externalHoliday.global())
+                                        .launchYear(externalHoliday.launchYear())
+                                        .country(country)
+                                        .build()
+                        )
+                );
 
-        return holidayRepository.save(
-                Holiday.builder()
-                        .date(date)
-                        .localName(externalHoliday.localName())
-                        .name(externalHoliday.name())
-                        .isFixed(externalHoliday.fixed())
-                        .isGlobal(externalHoliday.global())
-                        .launchYear(externalHoliday.launchYear())
-                        .country(country)
-                        .build()
-        );
     }
 
     // 현재 연도로 부터 최근 5년의 연도를 구한 후 반환
