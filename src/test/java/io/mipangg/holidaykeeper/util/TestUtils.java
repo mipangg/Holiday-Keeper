@@ -4,7 +4,9 @@ import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestUtils {
 
@@ -41,6 +43,14 @@ public class TestUtils {
                         .name("South Korea")
                         .build()
         );
+    }
+
+    public static Map<String, Country> getCountryMap() {
+        Map<String, Country> countries = new HashMap<>();
+        getCountries().forEach(c -> {
+            countries.put(c.getCode(), c);
+        });
+        return countries;
     }
 
     public static Country getCountryCanada() {
