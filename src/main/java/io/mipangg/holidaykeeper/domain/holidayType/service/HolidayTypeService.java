@@ -6,6 +6,7 @@ import io.mipangg.holidaykeeper.domain.holidayType.repository.HolidayTypeReposit
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -13,6 +14,7 @@ public class HolidayTypeService {
 
     private final HolidayTypeRepository holidayTypeRepository;
 
+    @Transactional
     public void saveIfNotExists(List<String> holidayTypes, Holiday holiday) {
         for (String holidayType : holidayTypes) {
             holidayTypeRepository.findByTypeAndHoliday_Id(holidayType, holiday.getId())

@@ -1,5 +1,6 @@
 package io.mipangg.holidaykeeper.domain.country.service;
 
+import static io.mipangg.holidaykeeper.util.TestUtils.getCountries;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -53,20 +54,7 @@ class CountryServiceTests {
     @DisplayName("모든 country 정보를 map 형태로 반환한다")
     void findAll_success_test() {
 
-        List<Country> countries = List.of(
-                Country.builder()
-                        .code("BR")
-                        .name("Brazil")
-                        .build(),
-                Country.builder()
-                        .code("CA")
-                        .name("Canada")
-                        .build(),
-                Country.builder()
-                        .code("KR")
-                        .name("South Korea")
-                        .build()
-        );
+        List<Country> countries = getCountries();
 
         when(countryRepository.findAll()).thenReturn(countries);
 

@@ -2,15 +2,18 @@ package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.service.CountryService;
+import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
+import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,8 +21,12 @@ public class HolidayService {
 
     private final HolidayRepository holidayRepository;
     private final ExternalHolidayClient externalHolidayClient;
-    private final CountryService countryService;
 
+    private final CountryService countryService;
+    private final HolidayTypeService holidayTypeService;
+    private final CountyService countyService;
+
+    @Transactional
     public void syncHolidays() {
         List<Integer> years = getYears();
         Map<String, Country> countryMap = countryService.findAll();
@@ -36,15 +43,19 @@ public class HolidayService {
                 externalHolidayClient.getHolidays(year, countryCode);
         for (ExternalHolidayResponse externalHoliday : externalHolidays) {
             Holiday holiday = saveHolidayIfNotExists(externalHoliday, country);
-            // TODO: County, CountryType, HolidayCounty 저장
+            // TODO: County, HolidayCounty 저장
+            // List<String> counties, Country country -> County에 저장
+            // County, Holiday -> HolidayCounty에 저장
 
-            List<String> types = externalHoliday.types();
+            holidayTypeService.saveIfNotExists(externalHoliday.types(), holiday);
 
         }
     }
 
-    private Holiday saveHolidayIfNotExists(ExternalHolidayResponse externalHoliday,
-            Country country) {
+    private Holiday saveHolidayIfNotExists(
+            ExternalHolidayResponse externalHoliday,
+            Country country
+    ) {
         LocalDate date = LocalDate.parse(externalHoliday.date());
         return holidayRepository.findByDateAndCountry(date, country)
                 .orElseGet(() ->

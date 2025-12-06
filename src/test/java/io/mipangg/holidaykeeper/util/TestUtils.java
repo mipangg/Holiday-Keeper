@@ -1,8 +1,10 @@
 package io.mipangg.holidaykeeper.util;
 
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import java.time.LocalDate;
+import java.util.List;
 
 public class TestUtils {
 
@@ -22,6 +24,23 @@ public class TestUtils {
                 .isGlobal(true)
                 .launchYear(null)
                 .build();
+    }
+
+    public static List<Country> getCountries() {
+        return List.of(
+                Country.builder()
+                        .code("BR")
+                        .name("Brazil")
+                        .build(),
+                Country.builder()
+                        .code("CA")
+                        .name("Canada")
+                        .build(),
+                Country.builder()
+                        .code("KR")
+                        .name("South Korea")
+                        .build()
+        );
     }
 
 }
