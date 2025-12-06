@@ -136,4 +136,49 @@ class HolidayServiceTests {
                 );
     }
 
+    @Test
+    @DisplayName("year과 country를 인자로 받아 기존 데이터가 존재하면 삭제하고 다시 저장한다")
+    void updateHolidays_success_test() {
+
+        int year = 2025;
+        String countryCode = "CA";
+        Country country = getCountryCanada();
+        Holiday holiday = getHolidayCanada();
+        List<Holiday> holidays = List.of(holiday);
+        List<ExternalHolidayResponse> externalHolidays = List.of(
+                new ExternalHolidayResponse(
+                        "2025-02-17",
+                        "Family Day",
+                        "Family Day",
+                        "CA",
+                        false,
+                        false,
+                        List.of(
+                                "CA-AB",
+                                "CA-BC",
+                                "CA-NB",
+                                "CA-ON",
+                                "CA-SK"
+                        ),
+                        null,
+                        List.of("Public")
+                ));
+
+        when(countryService.getByCode(countryCode)).thenReturn(country);
+        when(holidayRepository.findByYearAndCountry(year, country)).thenReturn(holidays);
+
+        when(externalHolidayClient.getHolidays(year, countryCode)).thenReturn(externalHolidays);
+        when(holidayRepository.findByDateAndCountry(LocalDate.parse("2025-02-17"), country))
+                .thenReturn(Optional.empty());
+
+        holidayService.updateHolidays(year, countryCode);
+
+        verify(holidayRepository).findByYearAndCountry(year, country);
+        verify(holidayRepository).deleteAll(holidays);
+
+        verify(externalHolidayClient).getHolidays(year, countryCode);
+        verify(holidayRepository).findByDateAndCountry(LocalDate.parse("2025-02-17"), country);
+        verify(holidayRepository).save(any(Holiday.class));
+    }
+
 }

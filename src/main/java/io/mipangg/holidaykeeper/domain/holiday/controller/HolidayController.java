@@ -4,6 +4,7 @@ import io.mipangg.holidaykeeper.domain.holiday.service.HolidayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,9 +43,21 @@ public class HolidayController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteHolidays(
             @PathVariable @Positive int year,
-            @PathVariable String countryCode
+            @PathVariable @NotBlank String countryCode
     ) {
         holidayService.deleteHolidays(year, countryCode);
+    }
+
+    @Operation(summary = "재동기화")
+    @ApiResponse(responseCode = "200", description = "특정 연도의 국가 공휴일 목록 덮어쓰기 성공")
+    @ApiResponse(responseCode = "400", description = "invalid value")
+    @PutMapping("/{year}/{countryCode}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateHolidays(
+            @PathVariable @Positive int year,
+            @PathVariable @NotBlank String countryCode
+    ) {
+        holidayService.updateHolidays(year, countryCode);
     }
 
 }

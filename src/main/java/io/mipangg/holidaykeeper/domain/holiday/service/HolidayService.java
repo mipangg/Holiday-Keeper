@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HolidayService {
@@ -34,6 +36,22 @@ public class HolidayService {
                 getExternalHolidays(year, countryCode, countryMap.get(countryCode));
             }
         }
+    }
+
+    // 기존 데이터 삭제 후 새로 저장
+    @Transactional
+    public void updateHolidays(int year, String countryCode) {
+
+        try {
+            deleteHolidays(year, countryCode);
+        } catch (IllegalArgumentException e) {
+            log.info(
+                    "삭제할 기존 데이터가 없어 skip 처리 되었습니다. year={}, countryCode={}",
+                    year, countryCode
+            );
+        }
+
+        getExternalHolidays(year, countryCode, countryService.getByCode(countryCode));
     }
 
     @Transactional
