@@ -40,4 +40,8 @@ public class HolidayCountyService {
 
     }
 
+    @Transactional
+    public void deleteHolidayCounties(List<Holiday> holidays) {
+        holidayCountyRepository.deleteByHolidays(holidays);
+    }
 }

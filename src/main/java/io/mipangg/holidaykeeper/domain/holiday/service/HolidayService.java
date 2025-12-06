@@ -6,7 +6,6 @@ import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
 import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
-import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,6 @@ public class HolidayService {
 
     @Transactional
     public void deleteHolidays(int year, String countryCode) {
-        // TODO: holiday, HolidayType, holidayCounty 삭제
         Country targetCountry = countryService.getByCode(countryCode);
 
         List<Holiday> targetHolidays = holidayRepository.findByYearAndCountry(year, targetCountry);
@@ -48,6 +46,9 @@ public class HolidayService {
                     String.format("%d년 %s에 해당하는 holiday를 찾을 수 없습니다.", year, countryCode)
             );
         }
+
+        holidayTypeService.deleteHolidayTypes(targetHolidays);
+        holidayCountyService.deleteHolidayCounties(targetHolidays);
 
         holidayRepository.deleteAll(targetHolidays);
 

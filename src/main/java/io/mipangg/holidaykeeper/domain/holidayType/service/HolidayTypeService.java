@@ -30,4 +30,8 @@ public class HolidayTypeService {
         }
     }
 
+    @Transactional
+    public void deleteHolidayTypes(List<Holiday> holidays) {
+        holidayTypeRepository.deleteByHolidays(holidays);
+    }
 }

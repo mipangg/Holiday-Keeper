@@ -3,8 +3,10 @@ package io.mipangg.holidaykeeper.domain.holiday.repository;
 import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayCounty;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -15,4 +17,8 @@ public interface HolidayCountyRepository extends JpaRepository<HolidayCounty, Lo
             @Param("county") County county,
             @Param("holiday") Holiday holiday
     );
+
+    @Modifying
+    @Query("delete from HolidayCounty hc where hc.holiday in :holidays")
+    void deleteByHolidays(@Param("holidays") List<Holiday> holidays);
 }
