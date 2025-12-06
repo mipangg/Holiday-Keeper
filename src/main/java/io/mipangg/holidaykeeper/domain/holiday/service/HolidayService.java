@@ -39,7 +39,9 @@ public class HolidayService {
 
     @Transactional
     public void deleteHolidays(int year, String countryCode) {
+        // TODO: holiday, HolidayType, holidayCounty 삭제
 
+        
     }
 
     // 각각의 ExternalHolidayResponse를 처리

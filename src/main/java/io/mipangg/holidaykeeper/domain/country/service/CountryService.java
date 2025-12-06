@@ -41,4 +41,12 @@ public class CountryService {
         return allCountries;
     }
 
+    public Country getByCode(String code) {
+        Country country = countryRepository.findByCode(code).orElseThrow(() -> {
+            throw new IllegalArgumentException(
+                    String.format("%s를 코드로 가진 country를 찾을 수 없습니다.", code));
+        });
+        return country;
+    }
+
 }

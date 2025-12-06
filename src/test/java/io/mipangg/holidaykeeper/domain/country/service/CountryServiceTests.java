@@ -1,7 +1,9 @@
 package io.mipangg.holidaykeeper.domain.country.service;
 
 import static io.mipangg.holidaykeeper.util.TestUtils.getCountries;
+import static io.mipangg.holidaykeeper.util.TestUtils.getCountryCanada;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -13,6 +15,7 @@ import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,5 +69,37 @@ class CountryServiceTests {
         assertThat(allCountries.get("CA")).isEqualTo(countries.get(1));
         assertThat(allCountries.get("KR")).isEqualTo(countries.get(2));
 
+    }
+
+    @Test
+    @DisplayName("code로 특정 country를 찾아 반환한다")
+    void getByCode_success_test() {
+
+        Country country = getCountryCanada();
+        String code = "CA";
+
+        when(countryRepository.findByCode(code)).thenReturn(Optional.of(country));
+
+        Country resultCountry = countryService.getByCode(code);
+
+        assertThat(resultCountry.getCode()).isEqualTo(code);
+        assertThat(resultCountry.getName()).isEqualTo("Canada");
+
+    }
+
+    @Test
+    @DisplayName("code와 일치하는 country가 없으면 예외가 발생한다")
+    void getByCode_fail_test() {
+
+        String code = "AA";
+
+        when(countryRepository.findByCode(code)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(
+                () -> {
+                    countryService.getByCode(code);
+                }
+        ).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(String.format("%s를 코드로 가진 country를 찾을 수 없습니다.", code));
     }
 }
