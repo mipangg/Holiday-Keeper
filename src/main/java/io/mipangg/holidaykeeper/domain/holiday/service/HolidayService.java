@@ -6,6 +6,7 @@ import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
 import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
+import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,4 +101,6 @@ public class HolidayService {
         return years;
     }
 
+    public void updateHolidays(int year, String countryCode) {
+    }
 }

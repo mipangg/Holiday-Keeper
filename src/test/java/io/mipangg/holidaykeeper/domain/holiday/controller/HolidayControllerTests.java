@@ -4,6 +4,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.mipangg.holidaykeeper.domain.holiday.service.HolidayService;
@@ -46,6 +47,20 @@ class HolidayControllerTests {
 
         verify(holidayService, times(1)).deleteHolidays(year, countryCode);
     
+    }
+
+    @Test
+    @DisplayName("year과 countryCode를 인자로 받아 특정 연도와 국가의 공휴일 리스트를 덮어쓰고 200을 반환한다")
+    void updateHolidays_should_return_200() throws Exception {
+
+        int year = 2025;
+        String countryCode = "KR";
+
+        mockMvc.perform(put("/holidays/{year}/{countryCode}", year, countryCode))
+                .andExpect(status().isOk());
+
+        verify(holidayService, times(1)).updateHolidays(year, countryCode);
+
     }
 
 }
