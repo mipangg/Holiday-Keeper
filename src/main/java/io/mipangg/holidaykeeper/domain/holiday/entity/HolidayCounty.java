@@ -1,6 +1,6 @@
-package io.mipangg.holidaykeeper.entity;
+package io.mipangg.holidaykeeper.domain.holiday.entity;
 
-import jakarta.persistence.Column;
+import io.mipangg.holidaykeeper.domain.county.entity.County;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -10,24 +10,27 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Builder
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class County {
+public class HolidayCounty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    @Column(nullable = false, length = 5)
-    private String name;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "country_id", nullable = false)
-    private Country country;
+    @JoinColumn(name = "holiday_id", nullable = false)
+    private Holiday holiday;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "county_id", nullable = false)
+    private County county;
 
 }
