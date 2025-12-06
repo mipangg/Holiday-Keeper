@@ -40,8 +40,17 @@ public class HolidayService {
     @Transactional
     public void deleteHolidays(int year, String countryCode) {
         // TODO: holiday, HolidayType, holidayCounty 삭제
+        Country targetCountry = countryService.getByCode(countryCode);
 
-        
+        List<Holiday> targetHolidays = holidayRepository.findByYearAndCountry(year, targetCountry);
+        if (targetHolidays.isEmpty()) {
+            throw new IllegalArgumentException(
+                    String.format("%d년 %s에 해당하는 holiday를 찾을 수 없습니다.", year, countryCode)
+            );
+        }
+
+        holidayRepository.deleteAll(targetHolidays);
+
     }
 
     // 각각의 ExternalHolidayResponse를 처리
