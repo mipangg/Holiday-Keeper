@@ -32,6 +32,9 @@ public class HolidayTypeService {
 
     @Transactional
     public void deleteHolidayTypes(List<Holiday> holidays) {
-        holidayTypeRepository.deleteByHolidays(holidays);
+        List<Long> holidayIds = holidays.stream()
+                .map(Holiday::getId)
+                .toList();
+        holidayTypeRepository.deleteByHolidays(holidayIds);
     }
 }

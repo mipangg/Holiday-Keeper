@@ -19,6 +19,12 @@ public interface HolidayCountyRepository extends JpaRepository<HolidayCounty, Lo
     );
 
     @Modifying
-    @Query("delete from HolidayCounty hc where hc.holiday in :holidays")
-    void deleteByHolidays(@Param("holidays") List<Holiday> holidays);
+    @Query(
+            value = "UPDATE holiday_county "
+                    + "SET deleted = true "
+                    + "WHERE holiday_id IN (:holidayIds)",
+            nativeQuery = true
+    )
+    void deleteByHolidays(@Param("holidayIds") List<Long> holidayIds);
+
 }

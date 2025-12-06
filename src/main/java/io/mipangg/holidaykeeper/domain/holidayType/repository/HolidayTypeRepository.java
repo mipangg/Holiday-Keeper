@@ -1,6 +1,5 @@
 package io.mipangg.holidaykeeper.domain.holidayType.repository;
 
-import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holidayType.entity.HolidayType;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +13,11 @@ public interface HolidayTypeRepository extends JpaRepository<HolidayType, Long> 
     Optional<HolidayType> findByTypeAndHoliday_Id(String type, Long holidayId);
 
     @Modifying
-    @Query("delete from HolidayType hy where hy.holiday in :holidays")
-    void deleteByHolidays(@Param("holidays") List<Holiday> holidays);
+    @Query(
+            value = "UPDATE holiday_type "
+                    + "SET deleted = true "
+                    + "WHERE holiday_id IN (:holidayIds)",
+            nativeQuery = true
+    )
+    void deleteByHolidays(@Param("holidayIds") List<Long> holidayIds);
 }

@@ -42,6 +42,9 @@ public class HolidayCountyService {
 
     @Transactional
     public void deleteHolidayCounties(List<Holiday> holidays) {
-        holidayCountyRepository.deleteByHolidays(holidays);
+        List<Long> holidayIds = holidays.stream()
+                .map(Holiday::getId)
+                .toList();
+        holidayCountyRepository.deleteByHolidays(holidayIds);
     }
 }
