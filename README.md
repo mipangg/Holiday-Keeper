@@ -311,17 +311,17 @@
 http://localhost:8080/swagger-ui/index.html
 ```
 
+<img width="1304" height="650" alt="Image" src="https://github.com/user-attachments/assets/cd73755e-2e89-417b-9281-54c528cb1690" />
+
 #### OpenAPI JSON
 ```
 http://localhost:8080/v3/api-docs
 ```
 
-`springdoc-openapi-starter-webmvc-ui`를 통해 자동 노출
-
-
-<img width="1304" height="650" alt="Image" src="https://github.com/user-attachments/assets/cd73755e-2e89-417b-9281-54c528cb1690" />
-
 <img width="689" height="941" alt="Image" src="https://github.com/user-attachments/assets/c8d26425-8c0c-43df-8c97-f0a5d4f5b531" />
+
+Swagger UI와 OpenAPI JSON 문서는 springdoc-openapi에 의해 자동 구성
+
 
 
 ---
