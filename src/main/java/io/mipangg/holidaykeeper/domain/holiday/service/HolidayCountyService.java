@@ -6,7 +6,10 @@ import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayCounty;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayCountyRepository;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +24,7 @@ public class HolidayCountyService {
 
     @Transactional
     public void saveIfNotExists(List<String> countyStrs, Country country, Holiday holiday) {
-        if (holiday.isGlobal()||countyStrs == null || countyStrs.isEmpty()) {
+        if (holiday.isGlobal() || countyStrs == null || countyStrs.isEmpty()) {
             return;
         }
 
@@ -46,5 +49,18 @@ public class HolidayCountyService {
                 .map(Holiday::getId)
                 .toList();
         holidayCountyRepository.deleteByHolidays(holidayIds);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, List<HolidayCounty>> findByHolidays(List<Holiday> holidays) {
+        Map<Long, List<HolidayCounty>> holidayCountyMap = new HashMap<>();
+        for (HolidayCounty holidayCounty : holidayCountyRepository.findByHolidays(holidays)) {
+            holidayCountyMap.computeIfAbsent(
+                    holidayCounty.getHoliday().getId(),
+                    k -> new ArrayList<>()
+            ).add(holidayCounty);
+        }
+
+        return holidayCountyMap;
     }
 }

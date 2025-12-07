@@ -16,15 +16,16 @@ public record PageResponse<T>(
         boolean hasPrevious
 ) {
 
-    public static <T> PageResponse<T> from(Page<T> page) {
+    public static <T> PageResponse<T> from(Page<?> origin, List<T> content) {
         return new PageResponse<>(
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.hasNext(),
-                page.hasPrevious()
+                content,
+                origin.getNumber(),
+                origin.getSize(),
+                origin.getTotalElements(),
+                origin.getTotalPages(),
+                origin.hasNext(),
+                origin.hasPrevious()
         );
     }
+
 }

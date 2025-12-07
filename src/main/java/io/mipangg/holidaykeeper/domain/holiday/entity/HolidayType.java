@@ -1,6 +1,5 @@
-package io.mipangg.holidaykeeper.domain.holidayType.entity;
+package io.mipangg.holidaykeeper.domain.holiday.entity;
 
-import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,7 +30,7 @@ public class HolidayType {
     @Column(nullable = false, length = 50)
     private String type;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "holiday_id", nullable = false)
     private Holiday holiday;
 

@@ -1,9 +1,12 @@
-package io.mipangg.holidaykeeper.domain.holidayType.service;
+package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
-import io.mipangg.holidaykeeper.domain.holidayType.entity.HolidayType;
-import io.mipangg.holidaykeeper.domain.holidayType.repository.HolidayTypeRepository;
+import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayType;
+import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayTypeRepository;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,4 +40,20 @@ public class HolidayTypeService {
                 .toList();
         holidayTypeRepository.deleteByHolidays(holidayIds);
     }
+
+    @Transactional(readOnly = true)
+    public Map<Long, List<HolidayType>> findHolidayTypes(List<Holiday> holidays) {
+        Map<Long, List<HolidayType>> holidayTypeMap = new HashMap<>();
+
+        for (HolidayType holidayType : holidayTypeRepository.findByHolidays(holidays)) {
+            holidayTypeMap.computeIfAbsent(
+                            holidayType.getHoliday().getId(),
+                            k -> new ArrayList<>()
+                    )
+                    .add(holidayType);
+        }
+
+        return holidayTypeMap;
+    }
+
 }

@@ -1,4 +1,4 @@
-package io.mipangg.holidaykeeper;
+package io.mipangg.holidaykeeper.config;
 
 import io.mipangg.holidaykeeper.domain.country.service.CountryService;
 import io.mipangg.holidaykeeper.domain.holiday.service.HolidayService;

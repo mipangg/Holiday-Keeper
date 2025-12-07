@@ -1,6 +1,7 @@
-package io.mipangg.holidaykeeper.domain.holidayType.repository;
+package io.mipangg.holidaykeeper.domain.holiday.repository;
 
-import io.mipangg.holidaykeeper.domain.holidayType.entity.HolidayType;
+import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
+import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,8 @@ public interface HolidayTypeRepository extends JpaRepository<HolidayType, Long> 
             nativeQuery = true
     )
     void deleteByHolidays(@Param("holidayIds") List<Long> holidayIds);
+
+    @Query("select ht from HolidayType ht where ht.holiday in :holidays")
+    List<HolidayType> findByHolidays(@Param("holidays") List<Holiday> holidays);
+
 }

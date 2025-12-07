@@ -72,7 +72,7 @@ public class HolidayController {
     @ApiResponse(responseCode = "200", description = "특정 연도의 국가 공휴일 목록 조회 성공")
     @ApiResponse(responseCode = "400", description = "invalid value")
     @ApiResponse(responseCode = "404", description = "not found")
-    @Parameter(description = "")
+    @Parameter(description = "검색 필터 및 페이징 조건 (page, size, from, to, holidayType)")
     @GetMapping("/{year}/{countryCode}")
     @ResponseStatus(HttpStatus.OK)
     public PageResponse<HolidayDetailResponse> searchHolidays(

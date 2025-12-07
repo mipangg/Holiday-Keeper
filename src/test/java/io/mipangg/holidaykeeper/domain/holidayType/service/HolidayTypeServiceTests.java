@@ -1,7 +1,6 @@
 package io.mipangg.holidaykeeper.domain.holidayType.service;
 
 import static io.mipangg.holidaykeeper.util.TestUtils.getHoliday;
-import static io.mipangg.holidaykeeper.util.TestUtils.getHolidayCanada;
 import static java.util.List.of;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -12,8 +11,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
-import io.mipangg.holidaykeeper.domain.holidayType.entity.HolidayType;
-import io.mipangg.holidaykeeper.domain.holidayType.repository.HolidayTypeRepository;
+import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayType;
+import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayTypeRepository;
+import io.mipangg.holidaykeeper.domain.holiday.service.HolidayTypeService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
