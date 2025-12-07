@@ -3,6 +3,9 @@ package io.mipangg.holidaykeeper.domain.holiday.service;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.service.CountryService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayDetailResponse;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidaySearchRequest;
+import io.mipangg.holidaykeeper.domain.holiday.dto.PageResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
 import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
@@ -12,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,6 +75,17 @@ public class HolidayService {
 
         holidayRepository.deleteAll(targetHolidays);
 
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<HolidayDetailResponse> searchHolidays(
+            int year,
+            String countryCode,
+            HolidaySearchRequest request
+    ) {
+        Pageable pageable = PageRequest.of(request.page(), request.size());
+
+        return null;
     }
 
     // 각각의 ExternalHolidayResponse를 처리
