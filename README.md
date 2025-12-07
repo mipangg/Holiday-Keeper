@@ -56,7 +56,9 @@
 
 ### 3. 공휴일 재동기화 
 ```PUT /holidays/{year}/{countryCode}```
-- 특정 연도의 국가 공휴일 데이터를 삭제 후 재호출하여 다시 저장
+- 특정 연도의 특정 국가 공휴일 데이터를 외부 API에서 재호출하여 동기화
+- DB에 데이터가 있으면 update, 없으면 insert
+- DB에 있지만 API에는 없으면 delete
 
 #### Path Variables
 | key | 설명 | value 타입 | 예시 |
@@ -299,7 +301,7 @@
 ## 🧪 테스트 실행
 - ```./gradlew clean test``` 성공 스크린샷
 
-<img width="350" height="571" alt="Image" src="https://github.com/user-attachments/assets/ffbb3a36-9e85-4b6d-ae35-53d98a16ccf5" />
+<img width="333" height="632" alt="Image" src="https://github.com/user-attachments/assets/d3e420b7-6b55-49cd-9acc-cceb962f7987" />
 
 ---
 
@@ -311,17 +313,17 @@
 http://localhost:8080/swagger-ui/index.html
 ```
 
+<img width="1304" height="650" alt="Image" src="https://github.com/user-attachments/assets/cd73755e-2e89-417b-9281-54c528cb1690" />
+
 #### OpenAPI JSON
 ```
 http://localhost:8080/v3/api-docs
 ```
 
-`springdoc-openapi-starter-webmvc-ui`를 통해 자동 노출
-
-
-<img width="1304" height="650" alt="Image" src="https://github.com/user-attachments/assets/cd73755e-2e89-417b-9281-54c528cb1690" />
-
 <img width="689" height="941" alt="Image" src="https://github.com/user-attachments/assets/c8d26425-8c0c-43df-8c97-f0a5d4f5b531" />
+
+Swagger UI와 OpenAPI JSON 문서는 springdoc-openapi에 의해 자동 구성
+
 
 
 ---

@@ -5,6 +5,8 @@ import static io.mipangg.holidaykeeper.util.TestUtils.getCountryCanada;
 import static io.mipangg.holidaykeeper.util.TestUtils.getCountyStrsCanada;
 import static io.mipangg.holidaykeeper.util.TestUtils.getHolidayCanada;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -82,6 +84,28 @@ class HolidayCountyServiceTests {
         verify(holidayCountyRepository, times(1))
                 .findByCountyAndHoliday(any(County.class), any(Holiday.class));
         verify(holidayCountyRepository, never()).save(any(HolidayCounty.class));
+
+    }
+
+    @Test
+    @DisplayName("HolidayCounty를 upsert 할 수 있다")
+    void upsertHolidayCounties_insert_success_test() {
+
+        Holiday holiday = getHolidayCanada();
+        Country country = getCountryCanada();
+
+        List<String> externalCountyNames = List.of("CA-AB");
+        County countyAB = getCountiesCanada().getFirst();
+
+        when(holidayCountyRepository.findByHoliday(holiday)).thenReturn(List.of());
+        when(countyService.findOrCreate("CA-AB", country)).thenReturn(countyAB);
+
+        holidayCountyService.upsertHolidayCounties(holiday, externalCountyNames, country);
+
+        verify(holidayCountyRepository, times(1)).saveAll(anyList());
+        verify(holidayCountyRepository, never()).deleteAll(anyList());
+        verify(countyService, times(1)).findOrCreate("CA-AB", country);
+        verify(holidayCountyRepository, never()).deleteByHoliday(anyLong());
 
     }
 }

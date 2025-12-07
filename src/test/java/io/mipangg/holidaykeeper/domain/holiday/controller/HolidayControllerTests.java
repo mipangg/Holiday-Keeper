@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayDetailResponse;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidaySearchRequest;
 import io.mipangg.holidaykeeper.domain.holiday.dto.PageResponse;
@@ -70,7 +69,7 @@ class HolidayControllerTests {
         mockMvc.perform(put("/holidays/{year}/{countryCode}", year, countryCode))
                 .andExpect(status().isOk());
 
-        verify(holidayService, times(1)).updateHolidays(year, countryCode);
+        verify(holidayService, times(1)).upsertHolidays(year, countryCode);
 
     }
 

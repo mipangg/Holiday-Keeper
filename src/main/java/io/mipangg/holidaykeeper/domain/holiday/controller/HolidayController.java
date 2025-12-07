@@ -65,7 +65,7 @@ public class HolidayController {
             @PathVariable @Positive int year,
             @PathVariable @NotBlank String countryCode
     ) {
-        holidayService.updateHolidays(year, countryCode);
+        holidayService.upsertHolidays(year, countryCode);
     }
 
     @Operation(summary = "검색")

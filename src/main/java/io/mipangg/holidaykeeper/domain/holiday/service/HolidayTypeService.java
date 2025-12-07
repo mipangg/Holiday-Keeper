@@ -56,4 +56,51 @@ public class HolidayTypeService {
         return holidayTypeMap;
     }
 
+    @Transactional
+    public void upsertHolidayTypes(Holiday holiday, List<String> externalTypes) {
+
+        // type이 비었어도 아래 로직 수행 필요
+        if (externalTypes == null || externalTypes.isEmpty()) {
+            externalTypes = new ArrayList<>();
+        }
+
+        List<HolidayType> holidayTypes = holidayTypeRepository.findByHoliday(holiday);
+
+        Map<String, HolidayType> holidayTypeMap = new HashMap<>();
+        holidayTypes.forEach(holidayType -> {
+            holidayTypeMap.put(holidayType.getType(), holidayType);
+        });
+
+        List<HolidayType> toInsert = new ArrayList<>();
+        List<HolidayType> toDelete = new ArrayList<>();
+
+        for (String externalType : externalTypes) {
+            HolidayType holidayType = holidayTypeMap.get(externalType);
+
+            // 없으면 새로운 데이터 추가
+            if (holidayType == null) {
+                toInsert.add(
+                        HolidayType.builder()
+                        .holiday(holiday)
+                        .type(externalType)
+                        .build()
+                );
+
+            } else {
+                // 있으면 기존 db 데이터 유지
+                holidayTypeMap.remove(externalType);
+            }
+        }
+
+        // 기존 db에 있지만 external에는 없음 -> 삭제 필요
+        toDelete.addAll(holidayTypeMap.values());
+
+        if (!toInsert.isEmpty()) {
+            holidayTypeRepository.saveAll(toInsert);
+        }
+        if (!toDelete.isEmpty()) {
+            holidayTypeRepository.deleteAll(toDelete);
+        }
+    }
+
 }

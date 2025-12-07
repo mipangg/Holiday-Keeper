@@ -25,4 +25,5 @@ public interface HolidayTypeRepository extends JpaRepository<HolidayType, Long> 
     @Query("select ht from HolidayType ht where ht.holiday in :holidays")
     List<HolidayType> findByHolidays(@Param("holidays") List<Holiday> holidays);
 
+    List<HolidayType> findByHoliday(Holiday holiday);
 }

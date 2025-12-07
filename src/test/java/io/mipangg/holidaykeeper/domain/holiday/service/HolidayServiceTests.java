@@ -2,6 +2,7 @@ package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import static io.mipangg.holidaykeeper.util.TestUtils.getCountiesCanada;
 import static io.mipangg.holidaykeeper.util.TestUtils.getCountryCanada;
+import static io.mipangg.holidaykeeper.util.TestUtils.getExternalHolidayResponses;
 import static io.mipangg.holidaykeeper.util.TestUtils.getHolidayCanada;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -11,6 +12,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,24 +69,7 @@ class HolidayServiceTests {
     void syncHolidays_success_test() {
 
         Map<String, Country> countryMap = Map.of("Canada", getCountryCanada());
-        List<ExternalHolidayResponse> externalHolidays = List.of(
-                new ExternalHolidayResponse(
-                        "2025-02-17",
-                        "Family Day",
-                        "Family Day",
-                        "CA",
-                        false,
-                        false,
-                        List.of(
-                                "CA-AB",
-                                "CA-BC",
-                                "CA-NB",
-                                "CA-ON",
-                                "CA-SK"
-                        ),
-                        null,
-                        List.of("Public")
-                ));
+        List<ExternalHolidayResponse> externalHolidays = getExternalHolidayResponses();
 
         Holiday holiday = getHolidayCanada();
 
@@ -148,52 +133,67 @@ class HolidayServiceTests {
     }
 
     @Test
-    @DisplayName("year과 country를 인자로 받아 기존 데이터가 존재하면 삭제하고 다시 저장한다")
-    void updateHolidays_success_test() {
+    @DisplayName("외부 api를 재호출 했을 때 DB에 없는 데이터면 Insert 한다")
+    void upsertHolidays_insert_success_test() {
 
         int year = 2025;
         String countryCode = "CA";
+        List<ExternalHolidayResponse> externalHolidays = getExternalHolidayResponses();
         Country country = getCountryCanada();
-        Holiday holiday = getHolidayCanada();
-        List<Holiday> holidays = List.of(holiday);
-        List<ExternalHolidayResponse> externalHolidays = List.of(
-                new ExternalHolidayResponse(
-                        "2025-02-17",
-                        "Family Day",
-                        "Family Day",
-                        "CA",
-                        false,
-                        false,
-                        List.of(
-                                "CA-AB",
-                                "CA-BC",
-                                "CA-NB",
-                                "CA-ON",
-                                "CA-SK"
-                        ),
-                        null,
-                        List.of("Public")
-                ));
-
-        when(countryService.getByCode(countryCode)).thenReturn(country);
-        when(holidayRepository.findByYearAndCountryCode(year, countryCode)).thenReturn(holidays);
 
         when(externalHolidayClient.getHolidays(year, countryCode)).thenReturn(externalHolidays);
-        when(holidayRepository.findByDateAndCountryAndNameAndIsGlobal(
-                LocalDate.parse("2025-02-17"), country, "Family Day", false
-        ))
-                .thenReturn(Optional.empty());
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode)).thenReturn(List.of());
+        when(countryService.getByCode(countryCode)).thenReturn(country);
 
-        holidayService.updateHolidays(year, countryCode);
+        holidayService.upsertHolidays(year, countryCode);
 
-        verify(holidayRepository).findByYearAndCountryCode(year, countryCode);
-        verify(holidayRepository).deleteAll(holidays);
+        verify(holidayRepository, times(1)).saveAll(anyList());
+        verify(holidayRepository, never()).deleteAll(anyList());
 
-        verify(externalHolidayClient).getHolidays(year, countryCode);
-        verify(holidayRepository).findByDateAndCountryAndNameAndIsGlobal(
-                LocalDate.parse("2025-02-17"), country, "Family Day", false
-        );
-        verify(holidayRepository).save(any(Holiday.class));
+    }
+
+    @Test
+    @DisplayName("외부 api를 재호출 했을 때 DB에만 있는 데이터면 Delete 한다")
+    void upsertHolidays_delete_success_test() {
+
+        int year = 2025;
+        String countryCode = "CA";
+        Holiday holiday = getHolidayCanada();
+        Country country = getCountryCanada();
+
+        when(externalHolidayClient.getHolidays(year, countryCode)).thenReturn(List.of());
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode))
+                .thenReturn(List.of(holiday));
+        when(countryService.getByCode(countryCode)).thenReturn(country);
+
+        holidayService.upsertHolidays(year, countryCode);
+
+        verify(holidayRepository, never()).saveAll(anyList());
+        verify(holidayRepository, times(1)).deleteAll(anyList());
+
+    }
+
+    @Test
+    @DisplayName("외부 api를 재호출 했을 때 DB, 외부 api 둘 다 있는 데이터면 update 한다")
+    void upsertHolidays_update_success_test() {
+
+        int year = 2025;
+        String countryCode = "CA";
+        Holiday holiday = getHolidayCanada();
+        List<ExternalHolidayResponse> externalHolidays = getExternalHolidayResponses();
+        Country country = getCountryCanada();
+
+        when(externalHolidayClient.getHolidays(year, countryCode))
+                .thenReturn(externalHolidays);
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode))
+                .thenReturn(List.of(holiday));
+        when(countryService.getByCode(countryCode)).thenReturn(country);
+
+        holidayService.upsertHolidays(year, countryCode);
+
+        verify(holidayRepository, never()).saveAll(anyList());
+        verify(holidayRepository, never()).deleteAll(anyList());
+
     }
 
     @Test

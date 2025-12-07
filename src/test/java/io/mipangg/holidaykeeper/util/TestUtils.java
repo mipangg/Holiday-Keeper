@@ -2,6 +2,7 @@ package io.mipangg.holidaykeeper.util;
 
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.county.entity.County;
+import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -112,5 +113,26 @@ public class TestUtils {
                 .isGlobal(false)
                 .launchYear(null)
                 .build();
+    }
+
+    public static List<ExternalHolidayResponse> getExternalHolidayResponses() {
+        return List.of(
+                new ExternalHolidayResponse(
+                        "2025-02-17",
+                        "Family Day",
+                        "Family Day",
+                        "CA",
+                        false,
+                        false,
+                        List.of(
+                                "CA-AB",
+                                "CA-BC",
+                                "CA-NB",
+                                "CA-ON",
+                                "CA-SK"
+                        ),
+                        null,
+                        List.of("Public")
+                ));
     }
 }
