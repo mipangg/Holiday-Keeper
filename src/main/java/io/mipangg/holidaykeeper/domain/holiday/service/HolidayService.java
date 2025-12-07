@@ -89,15 +89,18 @@ public class HolidayService {
             Country country
     ) {
         LocalDate date = LocalDate.parse(externalHoliday.date());
-        return holidayRepository.findByDateAndCountry(date, country)
+        String name = externalHoliday.name();
+        boolean isGlobal = externalHoliday.global();
+
+        return holidayRepository.findByDateAndCountryAndNameAndIsGlobal(date, country, name, isGlobal)
                 .orElseGet(() ->
                         holidayRepository.save(
                                 Holiday.builder()
                                         .date(date)
                                         .localName(externalHoliday.localName())
-                                        .name(externalHoliday.name())
+                                        .name(name)
                                         .isFixed(externalHoliday.fixed())
-                                        .isGlobal(externalHoliday.global())
+                                        .isGlobal(isGlobal)
                                         .launchYear(externalHoliday.launchYear())
                                         .country(country)
                                         .build()

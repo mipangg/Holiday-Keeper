@@ -4,6 +4,7 @@ import static io.mipangg.holidaykeeper.util.TestUtils.getCountryCanada;
 import static io.mipangg.holidaykeeper.util.TestUtils.getHolidayCanada;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -79,7 +80,9 @@ class HolidayServiceTests {
         when(countryService.findAll()).thenReturn(countryMap);
         when(externalHolidayClient.getHolidays(anyInt(), anyString()))
                 .thenReturn(externalHolidays);
-        when(holidayRepository.findByDateAndCountry(any(LocalDate.class), any(Country.class)))
+        when(holidayRepository.findByDateAndCountryAndNameAndIsGlobal(
+                any(LocalDate.class), any(Country.class), anyString(), anyBoolean()
+        ))
                 .thenReturn(Optional.empty());
         when(holidayRepository.save(any(Holiday.class))).thenReturn(holiday);
 
@@ -90,7 +93,9 @@ class HolidayServiceTests {
         verify(holidayTypeService, times(6))
                 .saveIfNotExists(anyList(), eq(holiday));
         verify(holidayRepository, times(6))
-                .findByDateAndCountry(any(LocalDate.class), any(Country.class));
+                .findByDateAndCountryAndNameAndIsGlobal(
+                        any(LocalDate.class), any(Country.class), anyString(), anyBoolean()
+                );
         verify(holidayRepository, times(6)).save(any(Holiday.class));
 
     }
@@ -168,7 +173,9 @@ class HolidayServiceTests {
         when(holidayRepository.findByYearAndCountry(year, country)).thenReturn(holidays);
 
         when(externalHolidayClient.getHolidays(year, countryCode)).thenReturn(externalHolidays);
-        when(holidayRepository.findByDateAndCountry(LocalDate.parse("2025-02-17"), country))
+        when(holidayRepository.findByDateAndCountryAndNameAndIsGlobal(
+                LocalDate.parse("2025-02-17"), country, "Family Day", false
+        ))
                 .thenReturn(Optional.empty());
 
         holidayService.updateHolidays(year, countryCode);
@@ -177,7 +184,9 @@ class HolidayServiceTests {
         verify(holidayRepository).deleteAll(holidays);
 
         verify(externalHolidayClient).getHolidays(year, countryCode);
-        verify(holidayRepository).findByDateAndCountry(LocalDate.parse("2025-02-17"), country);
+        verify(holidayRepository).findByDateAndCountryAndNameAndIsGlobal(
+                LocalDate.parse("2025-02-17"), country, "Family Day", false
+        );
         verify(holidayRepository).save(any(Holiday.class));
     }
 
