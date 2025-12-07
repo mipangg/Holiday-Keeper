@@ -58,6 +58,9 @@ public class HolidayTypeService {
 
     @Transactional
     public void upsertHolidayTypes(Holiday holiday, List<String> externalTypes) {
+        if (holiday == null) {
+            return;
+        }
 
         // type이 비었어도 아래 로직 수행 필요
         if (externalTypes == null || externalTypes.isEmpty()) {
