@@ -106,12 +106,9 @@ class HolidayServiceTests {
 
         int year = 2025;
         String countryCode = "CA";
-        Country targetCountry = getCountryCanada();
         List<Holiday> targetHolidays = List.of(getHolidayCanada());
 
-        when(countryService.getByCode(countryCode)).thenReturn(targetCountry);
-        when(holidayRepository.findByYearAndCountry(year, targetCountry))
-                .thenReturn(targetHolidays);
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode)).thenReturn(targetHolidays);
 
         holidayService.deleteHolidays(year, countryCode);
 
@@ -126,10 +123,7 @@ class HolidayServiceTests {
         int year = 2019;
         String countryCode = "CA";
 
-        Country targetCountry = getCountryCanada();
-
-        when(countryService.getByCode(countryCode)).thenReturn(targetCountry);
-        when(holidayRepository.findByYearAndCountry(year, targetCountry)).thenReturn(List.of());
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode)).thenReturn(List.of());
 
         assertThatThrownBy(
                 () -> {
@@ -170,7 +164,7 @@ class HolidayServiceTests {
                 ));
 
         when(countryService.getByCode(countryCode)).thenReturn(country);
-        when(holidayRepository.findByYearAndCountry(year, country)).thenReturn(holidays);
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode)).thenReturn(holidays);
 
         when(externalHolidayClient.getHolidays(year, countryCode)).thenReturn(externalHolidays);
         when(holidayRepository.findByDateAndCountryAndNameAndIsGlobal(
@@ -180,7 +174,7 @@ class HolidayServiceTests {
 
         holidayService.updateHolidays(year, countryCode);
 
-        verify(holidayRepository).findByYearAndCountry(year, country);
+        verify(holidayRepository).findByYearAndCountryCode(year, countryCode);
         verify(holidayRepository).deleteAll(holidays);
 
         verify(externalHolidayClient).getHolidays(year, countryCode);

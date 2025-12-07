@@ -61,9 +61,7 @@ public class HolidayService {
 
     @Transactional
     public void deleteHolidays(int year, String countryCode) {
-        Country targetCountry = countryService.getByCode(countryCode);
-
-        List<Holiday> targetHolidays = holidayRepository.findByYearAndCountry(year, targetCountry);
+        List<Holiday> targetHolidays = holidayRepository.findByYearAndCountryCode(year,countryCode);
         if (targetHolidays.isEmpty()) {
             throw new IllegalArgumentException(
                     String.format("%d년 %s에 해당하는 holiday를 찾을 수 없습니다.", year, countryCode)
@@ -84,6 +82,8 @@ public class HolidayService {
             HolidaySearchRequest request
     ) {
         Pageable pageable = PageRequest.of(request.page(), request.size());
+
+        // TODO: year, country
 
         return null;
     }

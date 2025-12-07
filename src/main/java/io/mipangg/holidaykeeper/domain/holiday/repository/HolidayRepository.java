@@ -23,6 +23,9 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
     );
 
     @Query("select h from Holiday h "
-            + "where YEAR(h.date) = :year and h.country = :country")
-    List<Holiday> findByYearAndCountry(@Param("year") int year, @Param("country")  Country country);
+            + "where YEAR(h.date) = :year and h.country.code = :countryCode")
+    List<Holiday> findByYearAndCountryCode(
+            @Param("year") int year,
+            @Param("countryCode")  String countryCode
+    );
 }
