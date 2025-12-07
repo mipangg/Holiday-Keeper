@@ -292,14 +292,14 @@
 
 ## 🛠️ ERD
 
-<img>
+<img width="1120" height="522" alt="Image" src="https://github.com/user-attachments/assets/bfa7489c-1c82-48da-8519-01c32bb6403c" />
 
 ---
 
 ## 🧪 테스트 실행
 - ```./gradlew clean test``` 성공 스크린샷
 
-<img>
+<img width="350" height="571" alt="Image" src="https://github.com/user-attachments/assets/ffbb3a36-9e85-4b6d-ae35-53d98a16ccf5" />
 
 ---
 
@@ -318,7 +318,11 @@ http://localhost:8080/v3/api-docs
 
 `springdoc-openapi-starter-webmvc-ui`를 통해 자동 노출
 
-<img>
+
+<img width="1304" height="650" alt="Image" src="https://github.com/user-attachments/assets/cd73755e-2e89-417b-9281-54c528cb1690" />
+
+<img width="689" height="941" alt="Image" src="https://github.com/user-attachments/assets/c8d26425-8c0c-43df-8c97-f0a5d4f5b531" />
+
 
 ---
 
