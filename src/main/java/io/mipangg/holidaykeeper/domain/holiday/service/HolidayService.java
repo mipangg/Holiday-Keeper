@@ -1,17 +1,28 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
+import static io.mipangg.holidaykeeper.domain.holiday.util.HolidayFormatter.getHolidayCountyNames;
+import static io.mipangg.holidaykeeper.domain.holiday.util.HolidayFormatter.getHolidayTypeNames;
+import static io.mipangg.holidaykeeper.domain.holiday.dto.HolidayDetailResponse.toHolidayDetailResponse;
+
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.service.CountryService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayDetailResponse;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidaySearchRequest;
+import io.mipangg.holidaykeeper.domain.holiday.dto.PageResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
+import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayCounty;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
-import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
+import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,9 +67,7 @@ public class HolidayService {
 
     @Transactional
     public void deleteHolidays(int year, String countryCode) {
-        Country targetCountry = countryService.getByCode(countryCode);
-
-        List<Holiday> targetHolidays = holidayRepository.findByYearAndCountry(year, targetCountry);
+        List<Holiday> targetHolidays = holidayRepository.findByYearAndCountryCode(year,countryCode);
         if (targetHolidays.isEmpty()) {
             throw new IllegalArgumentException(
                     String.format("%d년 %s에 해당하는 holiday를 찾을 수 없습니다.", year, countryCode)
@@ -70,6 +79,47 @@ public class HolidayService {
 
         holidayRepository.deleteAll(targetHolidays);
 
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<HolidayDetailResponse> searchHolidays(
+            int year,
+            String countryCode,
+            HolidaySearchRequest request
+    ) {
+        Pageable pageable = PageRequest.of(request.page(), request.size());
+
+        Page<Holiday> page = holidayRepository.searchHolidays(
+                year,
+                countryCode,
+                request.from(),
+                request.to(),
+                request.holidayType(),
+                pageable
+        );
+
+        List<Holiday> holidays = page.getContent();
+        // counties 정보 가져오기
+        Map<Long, List<HolidayCounty>> holidayCountyMap =
+                holidayCountyService.findByHolidays(holidays);
+
+        // types 정보 가져오기
+        Map<Long, List<HolidayType>> holidayTypeMap = holidayTypeService.findHolidayTypes(holidays);
+
+        List<HolidayDetailResponse> responseList = new ArrayList<>();
+
+        for (Holiday holiday : holidays) {
+            List<HolidayCounty> counties = holidayCountyMap.get(holiday.getId());
+            List<HolidayType> types = holidayTypeMap.get(holiday.getId());
+
+            responseList.add(toHolidayDetailResponse(
+                    holiday,
+                    getHolidayCountyNames(counties),
+                    getHolidayTypeNames(types)
+            ));
+        }
+
+        return PageResponse.from(page, responseList);
     }
 
     // 각각의 ExternalHolidayResponse를 처리

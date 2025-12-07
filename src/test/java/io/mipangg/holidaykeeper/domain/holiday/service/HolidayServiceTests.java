@@ -1,7 +1,9 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
+import static io.mipangg.holidaykeeper.util.TestUtils.getCountiesCanada;
 import static io.mipangg.holidaykeeper.util.TestUtils.getCountryCanada;
 import static io.mipangg.holidaykeeper.util.TestUtils.getHolidayCanada;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -15,10 +17,15 @@ import static org.mockito.Mockito.when;
 
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.service.CountryService;
+import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayDetailResponse;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidaySearchRequest;
+import io.mipangg.holidaykeeper.domain.holiday.dto.PageResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
+import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayCounty;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
-import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
+import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayType;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +36,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class HolidayServiceTests {
@@ -106,12 +117,10 @@ class HolidayServiceTests {
 
         int year = 2025;
         String countryCode = "CA";
-        Country targetCountry = getCountryCanada();
         List<Holiday> targetHolidays = List.of(getHolidayCanada());
 
-        when(countryService.getByCode(countryCode)).thenReturn(targetCountry);
-        when(holidayRepository.findByYearAndCountry(year, targetCountry))
-                .thenReturn(targetHolidays);
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode)).thenReturn(
+                targetHolidays);
 
         holidayService.deleteHolidays(year, countryCode);
 
@@ -126,10 +135,7 @@ class HolidayServiceTests {
         int year = 2019;
         String countryCode = "CA";
 
-        Country targetCountry = getCountryCanada();
-
-        when(countryService.getByCode(countryCode)).thenReturn(targetCountry);
-        when(holidayRepository.findByYearAndCountry(year, targetCountry)).thenReturn(List.of());
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode)).thenReturn(List.of());
 
         assertThatThrownBy(
                 () -> {
@@ -170,7 +176,7 @@ class HolidayServiceTests {
                 ));
 
         when(countryService.getByCode(countryCode)).thenReturn(country);
-        when(holidayRepository.findByYearAndCountry(year, country)).thenReturn(holidays);
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode)).thenReturn(holidays);
 
         when(externalHolidayClient.getHolidays(year, countryCode)).thenReturn(externalHolidays);
         when(holidayRepository.findByDateAndCountryAndNameAndIsGlobal(
@@ -180,7 +186,7 @@ class HolidayServiceTests {
 
         holidayService.updateHolidays(year, countryCode);
 
-        verify(holidayRepository).findByYearAndCountry(year, country);
+        verify(holidayRepository).findByYearAndCountryCode(year, countryCode);
         verify(holidayRepository).deleteAll(holidays);
 
         verify(externalHolidayClient).getHolidays(year, countryCode);
@@ -188,6 +194,78 @@ class HolidayServiceTests {
                 LocalDate.parse("2025-02-17"), country, "Family Day", false
         );
         verify(holidayRepository).save(any(Holiday.class));
+    }
+
+    @Test
+    @DisplayName("year과 countryCode를 인자로 받아 공휴일 리스트를 조회하고 PageResponse로 반환한다")
+    void searchHoliday_seccess_test() {
+
+        int year = 2025;
+        String countryCode = "KR";
+
+        HolidaySearchRequest req =
+                new HolidaySearchRequest(0, 20, null, null, null);
+
+        Holiday holiday = getHolidayCanada();
+
+        Page<Holiday> page = new PageImpl<>(
+                List.of(holiday),
+                PageRequest.of(0, 20),
+                1
+        );
+
+        List<County> counties = getCountiesCanada();
+        List<HolidayCounty> holidayCounties = counties.stream()
+                .map(c -> HolidayCounty.builder()
+                        .county(c)
+                        .holiday(holiday)
+                        .build())
+                .toList();
+
+        HolidayType holidayType = HolidayType.builder()
+                .type("Public")
+                .holiday(holiday)
+                .build();
+
+        when(holidayRepository.searchHolidays(
+                eq(year), eq(countryCode),
+                any(), any(), any(),
+                any(Pageable.class)
+        )).thenReturn(page);
+        when(holidayCountyService.findByHolidays(anyList()))
+                .thenReturn(Map.of(holiday.getId(), holidayCounties));
+        when(holidayTypeService.findHolidayTypes(anyList()))
+                .thenReturn(Map.of(holiday.getId(), List.of(holidayType)));
+
+        PageResponse<HolidayDetailResponse> pageResp =
+                holidayService.searchHolidays(year, countryCode, req);
+
+        assertThat(pageResp.content()).hasSize(1);
+
+        HolidayDetailResponse resp = pageResp.content().get(0);
+
+        assertThat(resp.date()).isEqualTo(LocalDate.of(2025, 2, 17));
+        assertThat(resp.localName()).isEqualTo("Family Day");
+        assertThat(resp.name()).isEqualTo("Family Day");
+        assertThat(resp.country()).isEqualTo("Canada");
+        assertThat(resp.countryCode()).isEqualTo("CA");
+        assertThat(resp.counties())
+                .containsExactlyInAnyOrder("CA-AB", "CA-BC", "CA-NB", "CA-ON", "CA-SK");
+        assertThat(resp.types())
+                .containsExactly("Public");
+
+        assertThat(pageResp.page()).isEqualTo(0);
+        assertThat(pageResp.size()).isEqualTo(20);
+        assertThat(pageResp.totalElements()).isEqualTo(1);
+
+        verify(holidayRepository).searchHolidays(
+                eq(year), eq(countryCode),
+                any(), any(), any(),
+                any(Pageable.class)
+        );
+        verify(holidayCountyService).findByHolidays(anyList());
+        verify(holidayTypeService).findHolidayTypes(anyList());
+
     }
 
 }
