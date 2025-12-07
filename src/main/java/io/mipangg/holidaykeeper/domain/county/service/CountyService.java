@@ -5,6 +5,7 @@ import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.county.repository.CountyRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,19 @@ public class CountyService {
             savedCounties.add(savedCounty);
         }
         return savedCounties;
+    }
+
+    @Transactional
+    public County findOrCreate(String name, Country country) {
+        return countyRepository.findByNameAndCountry(name, country)
+                .orElseGet(() ->
+                        countyRepository.save(
+                                County.builder()
+                                        .name(name)
+                                        .country(country)
+                                        .build()
+                        )
+                );
     }
 
 }
