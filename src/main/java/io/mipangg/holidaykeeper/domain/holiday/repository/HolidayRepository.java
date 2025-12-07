@@ -11,10 +11,15 @@ import org.springframework.data.repository.query.Param;
 
 public interface HolidayRepository extends JpaRepository<Holiday, Long> {
 
-    @Query("select h from Holiday h where h.date = :date and h.country = :country")
-    Optional<Holiday> findByDateAndCountry(
+    @Query("select h from Holiday h "
+            + "where h.date = :date and h.country = :country "
+            + "and h.name = :name and h.isGlobal = :isGlobal"
+    )
+    Optional<Holiday> findByDateAndCountryAndNameAndIsGlobal(
             @Param("date") LocalDate date,
-            @Param("country") Country country
+            @Param("country") Country country,
+            @Param("name") String name,
+            @Param("isGlobal") boolean isGlobal
     );
 
     @Query("select h from Holiday h "
