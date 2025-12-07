@@ -301,7 +301,7 @@
 ## 🧪 테스트 실행
 - ```./gradlew clean test``` 성공 스크린샷
 
-<img width="350" height="571" alt="Image" src="https://github.com/user-attachments/assets/ffbb3a36-9e85-4b6d-ae35-53d98a16ccf5" />
+<img width="333" height="632" alt="Image" src="https://github.com/user-attachments/assets/d3e420b7-6b55-49cd-9acc-cceb962f7987" />
 
 ---
 
