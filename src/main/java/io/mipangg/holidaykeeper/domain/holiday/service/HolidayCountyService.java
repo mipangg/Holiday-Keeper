@@ -70,6 +70,9 @@ public class HolidayCountyService {
             List<String> externalCountyNames,
             Country country
     ) {
+        if (holiday == null) {
+            return;
+        }
 
         // 전역 공휴일이면 county 모두 삭제하고 리턴
         if (holiday.isGlobal()) {
