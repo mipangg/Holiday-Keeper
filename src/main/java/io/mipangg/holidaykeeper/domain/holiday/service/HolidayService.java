@@ -93,6 +93,9 @@ public class HolidayService {
             } else {
                 holiday.update(externalHoliday);
             }
+
+            holidayCountyService.upsertHolidayCounties(holiday, externalHoliday.counties(), country);
+            holidayTypeService.upsertHolidayTypes(holiday, externalHoliday.types());
         }
 
         // 외부 데이터에는 없는데 db에 있으면 삭제
