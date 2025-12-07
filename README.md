@@ -56,8 +56,9 @@
 
 ### 3. 공휴일 재동기화 
 ```PUT /holidays/{year}/{countryCode}```
-- 특정 연도의 특정 국가 공휴일 데이터를 외부 API에서 재호출하여 업데이트
-- 기존 데이터가 있으면 update, 없으면 insert
+- 특정 연도의 특정 국가 공휴일 데이터를 외부 API에서 재호출하여 동기화
+- DB에 데이터가 있으면 update, 없으면 insert
+- DB에 있지만 API에는 없으면 delete
 
 #### Path Variables
 | key | 설명 | value 타입 | 예시 |

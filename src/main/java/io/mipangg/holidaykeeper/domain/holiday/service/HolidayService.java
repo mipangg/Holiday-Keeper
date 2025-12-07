@@ -16,6 +16,7 @@ import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
 import io.mipangg.holidaykeeper.domain.holiday.entity.HolidayType;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -49,20 +50,66 @@ public class HolidayService {
         }
     }
 
-    // 기존 데이터 삭제 후 새로 저장
     @Transactional
-    public void updateHolidays(int year, String countryCode) {
+    public void upsertHolidays(int year, String countryCode) {
+        List<ExternalHolidayResponse> externalHolidays =
+                externalHolidayClient.getHolidays(year, countryCode);
+        List<Holiday> holidays = holidayRepository.findByYearAndCountryCode(year, countryCode);
 
-        try {
-            deleteHolidays(year, countryCode);
-        } catch (IllegalArgumentException e) {
-            log.info(
-                    "삭제할 기존 데이터가 없어 skip 처리 되었습니다. year={}, countryCode={}",
-                    year, countryCode
-            );
+        Country country = countryService.getByCode(countryCode);
+
+        Map<String, Holiday> holidayMap = new HashMap<>();
+        holidays.forEach(holiday -> {
+            String key = createKey(holiday.getDate().toString(), holiday.getName());
+            holidayMap.put(key, holiday);
+        });
+
+        Map<String, ExternalHolidayResponse> externalHolidayMap = new HashMap<>();
+        externalHolidays.forEach(externalHoliday -> {
+            String key = createKey(externalHoliday.date(), externalHoliday.name());
+            externalHolidayMap.put(key, externalHoliday);
+        });
+
+        List<Holiday> toInsert = new ArrayList<>();
+        List<Holiday> toDelete = new ArrayList<>();
+
+        for (ExternalHolidayResponse externalHoliday : externalHolidays) {
+            String key = createKey(externalHoliday.date(), externalHoliday.name());
+            Holiday holiday = holidayMap.get(key);
+
+            if (holiday == null) {
+                Holiday newHoliday = Holiday.builder()
+                        .date(LocalDate.parse(externalHoliday.date()))
+                        .localName(externalHoliday.localName())
+                        .name(externalHoliday.name())
+                        .country(country)
+                        .isFixed(externalHoliday.fixed())
+                        .isGlobal(externalHoliday.global())
+                        .launchYear(externalHoliday.launchYear())
+                        .build();
+
+                toInsert.add(newHoliday);
+
+            } else {
+                holiday.update(externalHoliday);
+            }
         }
 
-        getExternalHolidays(year, countryCode, countryService.getByCode(countryCode));
+        // 외부 데이터에는 없는데 db에 있으면 삭제
+        for (Holiday holiday : holidays) {
+            String key = createKey(holiday.getDate().toString(), holiday.getName());
+            if (!externalHolidayMap.containsKey(key)) {
+                toDelete.add(holiday);
+            }
+        }
+
+        if (!toInsert.isEmpty()) {
+            holidayRepository.saveAll(toInsert);
+        }
+        if (!toDelete.isEmpty()) {
+            holidayRepository.deleteAll(toDelete);
+        }
+
     }
 
     @Transactional
@@ -142,7 +189,8 @@ public class HolidayService {
         String name = externalHoliday.name();
         boolean isGlobal = externalHoliday.global();
 
-        return holidayRepository.findByDateAndCountryAndNameAndIsGlobal(date, country, name, isGlobal)
+        return holidayRepository
+                .findByDateAndCountryAndNameAndIsGlobal(date, country, name, isGlobal)
                 .orElseGet(() ->
                         holidayRepository.save(
                                 Holiday.builder()
@@ -169,6 +217,11 @@ public class HolidayService {
         }
 
         return years;
+    }
+
+    // holiday 날짜와 이름 조합으로 키를 생성하여 반환
+    private String createKey(String date, String name) {
+        return date + name;
     }
 
 }

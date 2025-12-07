@@ -2,6 +2,7 @@ package io.mipangg.holidaykeeper.domain.holiday.entity;
 
 import io.mipangg.holidaykeeper.domain.common.BaseEntity;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.holiday.dto.ExternalHolidayResponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -48,5 +49,14 @@ public class Holiday extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id", nullable = false)
     private Country country;
+
+    public void update(ExternalHolidayResponse externalHoliday) {
+        this.date = LocalDate.parse(externalHoliday.date());
+        this.localName = externalHoliday.localName();
+        this.name = externalHoliday.name();
+        this.isFixed = externalHoliday.fixed();
+        this.isGlobal = externalHoliday.global();
+        this.launchYear = externalHoliday.launchYear();
+    }
 
 }
