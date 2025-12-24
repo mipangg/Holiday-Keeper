@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.mipangg.holidaykeeper.common.dto.ExternalCountryResponse;
+import io.mipangg.holidaykeeper.common.dto.ExternalHolidayResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -69,5 +71,44 @@ class ExternalApiClientTests {
 
     }
 
+    @Test
+    @DisplayName("getExternalHolidays를 호출하여 특정 국가의 휴일 정보를 조회할 수 있다")
+    void getExternalHolidays_success_test() throws Exception {
+
+        // 응답 체크
+        List<ExternalHolidayResponse> expected =
+                List.of(
+                        new ExternalHolidayResponse(
+                                LocalDate.of(2025, 1, 1),
+                                "New Year's Day",
+                                "New Year's Day",
+                                "CA",
+                                false,
+                                true,
+                                null,
+                                null,
+                                List.of("Public"))
+                );
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(objectMapper.writeValueAsString(expected))
+                .addHeader("Content-Type", "application/json"));
+
+        List<ExternalHolidayResponse> actual =
+                externalApiClient.getExternalHolidays(2025, "CA");
+
+        assertThat(actual).hasSize(1);
+        assertThat(expected.getFirst().date()).isEqualTo(actual.getFirst().date());
+        assertThat(expected.getFirst().localName()).isEqualTo(actual.getFirst().localName());
+        assertThat(expected.getFirst().name()).isEqualTo(actual.getFirst().name());
+        assertThat(expected.getFirst().countryCode()).isEqualTo(actual.getFirst().countryCode());
+
+        // 요청 체크
+        final RecordedRequest recordedRequest = mockWebServer.takeRequest();
+        assertAll(
+                () -> assertEquals("GET", recordedRequest.getMethod()),
+                () -> assertEquals("/PublicHolidays/2025/CA", recordedRequest.getPath())
+        );
+    }
 
 }
