@@ -9,6 +9,4 @@ public interface CountryRepository extends JpaRepository<Country, Long> {
 
     boolean existsByCountryCodeAndName(String countryCode, String name);
 
-    @Query("select c.countryCode from Country c")
-    List<String> findAllCountryCodes();
 }

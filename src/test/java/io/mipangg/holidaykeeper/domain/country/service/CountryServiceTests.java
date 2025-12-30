@@ -1,5 +1,6 @@
 package io.mipangg.holidaykeeper.domain.country.service;
 
+import static io.mipangg.holidaykeeper.util.TestUtils.getCountryMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,8 +12,10 @@ import io.mipangg.holidaykeeper.common.dto.ExternalCountryResponse;
 import io.mipangg.holidaykeeper.common.service.ExternalApiClient;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,16 +66,18 @@ class CountryServiceTests {
     @DisplayName("모든 countryCode 리스트를 반환할 수 있다")
     void getAllCountryCodes_success() {
 
-        List<String> expected = List.of("BR", "CA", "KR");
+        Map<String, Country> expected = getCountryMap();
+        List<Country> countries = new ArrayList<>(expected.values());
 
-        when(countryRepository.findAllCountryCodes()).thenReturn(expected);
 
-        List<String> actual = countryService.getAllCountryCodes();
+        when(countryRepository.findAll()).thenReturn(countries);
+
+        Map<String, Country> actual = countryService.getAll();
 
         assertThat(actual).hasSize(expected.size());
         assertThat(actual).isEqualTo(expected);
 
-        verify(countryRepository).findAllCountryCodes();
+        verify(countryRepository).findAll();
 
     }
 
@@ -80,11 +85,11 @@ class CountryServiceTests {
     @DisplayName("countryRepository에서 반환된 countryCode 리스트가 빈 리스트면 예외가 발생한다")
     void getAllCountry_fail() {
 
-        when(countryRepository.findAllCountryCodes()).thenReturn(Collections.emptyList());
+        when(countryRepository.findAll()).thenReturn(Collections.emptyList());
 
         assertThatThrownBy(
                 () -> {
-                    countryService.getAllCountryCodes();
+                    countryService.getAll();
                 }
         ).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("현재 저장된 CountryCode가 없습니다.");

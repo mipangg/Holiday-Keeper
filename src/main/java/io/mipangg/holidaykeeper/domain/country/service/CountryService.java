@@ -4,7 +4,9 @@ import io.mipangg.holidaykeeper.common.dto.ExternalCountryResponse;
 import io.mipangg.holidaykeeper.common.service.ExternalApiClient;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,14 +37,19 @@ public class CountryService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> getAllCountryCodes() {
-        List<String> allCountryCodes = countryRepository.findAllCountryCodes();
+    public Map<String, Country> getAll() {
+        Map<String, Country> countryMap = new HashMap<>();
+        List<Country> countries = countryRepository.findAll();
 
-        if (allCountryCodes.isEmpty()) {
+        if (countries.isEmpty()) {
             throw new IllegalArgumentException("현재 저장된 CountryCode가 없습니다.");
         }
 
-        return allCountryCodes;
+        for (Country country : countries) {
+            countryMap.put(country.getCountryCode(), country);
+        }
+
+        return countryMap;
     }
 
 
