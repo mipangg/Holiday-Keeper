@@ -1,6 +1,7 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import static io.mipangg.holidaykeeper.util.TestUtils.getCountryMap;
+import static io.mipangg.holidaykeeper.util.TestUtils.getLastFiveYears;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,10 +48,7 @@ class HolidaySupportServiceTests {
     @DisplayName("최근 5년의 연도가 담긴 리스트를 반환할 수 있다")
     void getLastFiveYears_success() {
 
-        int thisYear = LocalDate.now().getYear();
-        List<Integer> expected = List.of(
-                thisYear, thisYear - 1, thisYear - 2, thisYear - 3, thisYear - 4
-        );
+        List<Integer> expected = getLastFiveYears();
 
         List<Integer> actual = holidaySupportService.getLastFiveYears();
 

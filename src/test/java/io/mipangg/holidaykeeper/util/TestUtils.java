@@ -1,6 +1,8 @@
 package io.mipangg.holidaykeeper.util;
 
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 public class TestUtils {
@@ -23,6 +25,11 @@ public class TestUtils {
                         .name("South Korea")
                         .build()
         );
+    }
+
+    public static List<Integer> getLastFiveYears() {
+        int thisYear = LocalDate.now().getYear();
+        return List.of(thisYear, thisYear - 1, thisYear - 2, thisYear - 3, thisYear - 4);
     }
 
 }
