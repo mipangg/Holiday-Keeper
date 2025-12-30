@@ -34,5 +34,16 @@ public class CountryService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<String> getAllCountryCodes() {
+        List<String> allCountryCodes = countryRepository.findAllCountryCodes();
+
+        if (allCountryCodes.isEmpty()) {
+            throw new IllegalArgumentException("현재 저장된 CountryCode가 없습니다.");
+        }
+
+        return allCountryCodes;
+    }
+
 
 }

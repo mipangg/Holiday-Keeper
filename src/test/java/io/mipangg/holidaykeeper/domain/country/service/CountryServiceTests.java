@@ -1,7 +1,8 @@
 package io.mipangg.holidaykeeper.domain.country.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,6 +11,7 @@ import io.mipangg.holidaykeeper.common.dto.ExternalCountryResponse;
 import io.mipangg.holidaykeeper.common.service.ExternalApiClient;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,6 +56,38 @@ class CountryServiceTests {
         verify(countryRepository).existsByCountryCodeAndName("CA", "Canada");
         verify(countryRepository).existsByCountryCodeAndName("KR", "South Korea");
         verify(countryRepository, times(2)).save(any(Country.class));
+
+    }
+
+    @Test
+    @DisplayName("모든 countryCode 리스트를 반환할 수 있다")
+    void getAllCountryCodes_success() {
+
+        List<String> expected = List.of("BR", "CA", "KR");
+
+        when(countryRepository.findAllCountryCodes()).thenReturn(expected);
+
+        List<String> actual = countryService.getAllCountryCodes();
+
+        assertThat(actual).hasSize(expected.size());
+        assertThat(actual).isEqualTo(expected);
+
+        verify(countryRepository).findAllCountryCodes();
+
+    }
+
+    @Test
+    @DisplayName("countryRepository에서 반환된 countryCode 리스트가 빈 리스트면 예외가 발생한다")
+    void getAllCountry_fail() {
+
+        when(countryRepository.findAllCountryCodes()).thenReturn(Collections.emptyList());
+
+        assertThatThrownBy(
+                () -> {
+                    countryService.getAllCountryCodes();
+                }
+        ).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("현재 저장된 CountryCode가 없습니다.");
 
     }
 }
