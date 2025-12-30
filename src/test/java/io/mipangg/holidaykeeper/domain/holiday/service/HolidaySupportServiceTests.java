@@ -1,12 +1,15 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
+import static io.mipangg.holidaykeeper.util.TestUtils.getCountryMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.service.CountryService;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,19 +27,19 @@ class HolidaySupportServiceTests {
     private CountryService countryService;
 
     @Test
-    @DisplayName("countryService의 저장 메서드 호출 후 저장된 countryCode 리스트를 반환할 수 있다")
+    @DisplayName("countryService의 저장 메서드 호출 후 저장된 country 맵 반환을 반환할 수 있다")
     void saveCountriesAndGetCountryCodes_success() {
 
-        List<String> countryCodes = List.of("BR", "CA", "KR");
+        Map<String, Country> countryMap = getCountryMap();
 
-        when(countryService.getAllCountryCodes()).thenReturn(countryCodes);
+        when(countryService.getAll()).thenReturn(countryMap);
 
-        List<String> result = holidaySupportService.saveCountriesAndGetCountryCodes();
+        Map<String, Country> result = holidaySupportService.saveAndGetCountries();
 
-        assertThat(result).isEqualTo(countryCodes);
+        assertThat(result).isEqualTo(countryMap);
 
         verify(countryService).saveCountries();
-        verify(countryService).getAllCountryCodes();
+        verify(countryService).getAll();
 
     }
 
