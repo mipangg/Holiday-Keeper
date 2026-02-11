@@ -18,7 +18,7 @@ public enum ErrorCode {
     /*
      * 409 CONFLICT
      */
-    CONFLICT(HttpStatus.CONFLICT, "이미 존재합니다."),
+    CONFLICT(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다."),
 
     /*
      * 500 INTERNAL_SERVER_ERROR: 내부 서버 오류

@@ -18,10 +18,4 @@ public class CustomLogicException extends RuntimeException {
         this.detail = "";
     }
 
-    public CustomLogicException(ErrorCode errorCode, Object... args) {
-        super(String.format(errorCode.getMessage(), args));
-        this.errorCode = errorCode;
-        this.detail = "";
-    }
-
 }

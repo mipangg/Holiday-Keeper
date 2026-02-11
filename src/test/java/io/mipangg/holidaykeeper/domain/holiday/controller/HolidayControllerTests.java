@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.mipangg.holidaykeeper.domain.country.service.CountryService;
 import io.mipangg.holidaykeeper.domain.holiday.service.HolidayService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,9 @@ class HolidayControllerTests {
     @MockitoBean
     private HolidayService holidayService;
 
+    @MockitoBean
+    private CountryService countryService;
+
     @Test
     @DisplayName("공휴일 데이터 적재 테스트")
     void createHolidayTest() throws Exception {
@@ -33,6 +37,7 @@ class HolidayControllerTests {
                 .andExpect(status().isCreated())
                 .andDo(print());
 
+        verify(countryService).saveCountries();
         verify(holidayService).saveHolidays();
     }
 

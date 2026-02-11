@@ -2,7 +2,8 @@ package io.mipangg.holidaykeeper.common.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.mipangg.holidaykeeper.common.dto.ExternalCountryResponse;
+import io.mipangg.holidaykeeper.external.dto.ExternalCountryResponse;
+import io.mipangg.holidaykeeper.external.service.ExternalApiClient;
 import java.io.IOException;
 import java.util.List;
 import okhttp3.mockwebserver.MockResponse;
