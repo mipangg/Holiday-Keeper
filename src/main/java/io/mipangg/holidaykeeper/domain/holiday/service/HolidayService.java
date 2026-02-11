@@ -1,6 +1,8 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayTypesDto;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.properties.HolidayProperties;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
@@ -42,25 +44,38 @@ public class HolidayService {
         // counties가 존재할 경우 외부 api 호출 시 데이터가 중복되어 처리되는 문제를 처리하기 위해 uniqueKeySet 사용
         Set<String> uniqueKeySet = new HashSet<>();
         Set<Holiday> holidays = new HashSet<>();
+        List<HolidayTypesDto> holidayTypesDtos = new ArrayList<>();
+        List<HolidayCountiesDto> holidayCountiesDtos = new ArrayList<>();
+
         getExternalHolidays(countries.keySet()).forEach(ext -> {
-            String uniqueKey = ext.date() + "|" + ext.localName() + "|" + ext.countryCode();
+            String uniqueKey = createUniqueKey(ext);
             if (!uniqueKeySet.contains(uniqueKey)) {
                 uniqueKeySet.add(uniqueKey);
-                holidays.add(
-                        Holiday.builder()
-                                .date(LocalDate.parse(ext.date()))
-                                .localName(ext.localName())
-                                .name(ext.name())
-                                .fixed(ext.fixed())
-                                .global(ext.global())
-                                .launchYear(ext.launchYear())
-                                .country(countries.get(ext.countryCode()))
-                                .build()
-                );
+                Holiday holiday = Holiday.builder()
+                        .date(LocalDate.parse(ext.date()))
+                        .localName(ext.localName())
+                        .name(ext.name())
+                        .fixed(ext.fixed())
+                        .global(ext.global())
+                        .launchYear(ext.launchYear())
+                        .country(countries.get(ext.countryCode()))
+                        .build();
+
+                holidays.add(holiday);
+                holidayTypesDtos.add(new HolidayTypesDto(holiday, ext.types()));
+                holidayCountiesDtos.add(new HolidayCountiesDto(holiday, ext.counties()));
             }
         });
 
         holidayRepository.saveAll(holidays);
+
+        holidayTypeService.saveHolidayTypes(holidayTypesDtos);
+        holidayCountyService.saveHolidayCounties(holidayCountiesDtos);
+
+    }
+
+    private static String createUniqueKey(ExternalHolidayResponse ext) {
+        return ext.date() + "|" + ext.localName() + "|" + ext.countryCode();
     }
 
     private List<ExternalHolidayResponse> getExternalHolidays(Set<String> countyCodes) {

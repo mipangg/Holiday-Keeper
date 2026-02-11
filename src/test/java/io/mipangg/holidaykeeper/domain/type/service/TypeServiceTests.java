@@ -27,21 +27,21 @@ class TypeServiceTests {
     private TypeRepository typeRepository;
 
     @Test
-    @DisplayName("이미 저장되어 있는 type인 경우 기존의 것을, 아닌 경우 type을 새로 저장 후 한꺼번에 반환")
+    @DisplayName("repository에 type이 존재하면 조회, 없으면 생성 후 저장하는 기능 테스트")
     void getOrCreateTypesTest() {
 
         Set<String> typeNames = Set.of("Public", "Bank");
-        Type typePublic = Type.builder().type("Public").build();
+        Type typeBank = Type.builder().type("Bank").build();
 
-        when(typeRepository.findByTypeIn(typeNames)).thenReturn(List.of(typePublic));
+        when(typeRepository.findByTypeIn(typeNames)).thenReturn(List.of(typeBank));
 
-        Map<String, Type> result = typeService.getOrCreateTypes(typeNames);
+        Map<String, Type> actual = typeService.getOrCreateTypes(typeNames);
 
         verify(typeRepository).findByTypeIn(typeNames);
         verify(typeRepository).saveAll(anyList());
 
-        assertThat(result.get("Public").getType()).isEqualTo("Public");
-        assertThat(result.get("Bank").getType()).isEqualTo("Bank");
+        assertThat(actual.get("Public").getType()).isEqualTo("Public");
+        assertThat(actual.get("Bank").getType()).isEqualTo("Bank");
 
     }
 
