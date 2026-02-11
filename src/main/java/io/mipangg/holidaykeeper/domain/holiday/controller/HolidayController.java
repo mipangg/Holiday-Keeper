@@ -1,7 +1,10 @@
 package io.mipangg.holidaykeeper.domain.holiday.controller;
 
+import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.service.CountryService;
 import io.mipangg.holidaykeeper.domain.holiday.service.HolidayService;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,8 +23,8 @@ public class HolidayController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createHoliday() {
-        countryService.saveCountries();
-        holidayService.saveHolidays();
+        Map<String, Country> countries = countryService.saveCountries();
+        holidayService.saveHolidays(countries);
     }
 
 

@@ -2,7 +2,7 @@ package io.mipangg.holidaykeeper.domain.country.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +12,7 @@ import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
 import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,25 +43,29 @@ class CountryServiceTests {
                 new ExternalCountryResponse("KR", "South Korea")
         );
 
+        when(countryRepository.count()).thenReturn(0L);
         when(externalApiClient.getExternalCountries()).thenReturn(externalCountryResponses);
 
-        // List<ExternalCountryResponse> -> List<Country>로 변환
-        List<Country> expected = List.of(
-                Country.builder().countryCode("BR").name("Brazil").build(),
-                Country.builder().countryCode("CA").name("Canada").build(),
-                Country.builder().countryCode("KR").name("South Korea").build()
+        // List<ExternalCountryResponse> -> Map<String, Country>로 변환
+        Map<String, Country> expected = Map.of(
+                "BR", Country.builder().countryCode("BR").name("Brazil").build(),
+                "CA", Country.builder().countryCode("CA").name("Canada").build(),
+                "KR", Country.builder().countryCode("KR").name("South Korea").build()
         );
 
         // countryRepository.saveAll(List<Country>)로 한번에 저장
-        List<Country> actual = countryService.saveCountries();
+        Map<String, Country> actual = countryService.saveCountries();
 
-        verify(countryRepository).saveAll(anyList());
+        verify(countryRepository).count();
+        verify(countryRepository).saveAll(anyCollection());
 
         assertThat(actual).hasSize(expected.size());
-        assertThat(actual.getFirst().getCountryCode()).isEqualTo(expected.getFirst().getCountryCode());
-        assertThat(actual.getFirst().getName()).isEqualTo(expected.getFirst().getName());
-        assertThat(actual.getLast().getCountryCode()).isEqualTo(expected.getLast().getCountryCode());
-        assertThat(actual.getLast().getName()).isEqualTo(expected.getLast().getName());
+        assertThat(actual.get("BR").getCountryCode()).isEqualTo(expected.get("BR").getCountryCode());
+        assertThat(actual.get("BR").getName()).isEqualTo(expected.get("BR").getName());
+        assertThat(actual.get("CA").getCountryCode()).isEqualTo(expected.get("CA").getCountryCode());
+        assertThat(actual.get("CA").getName()).isEqualTo(expected.get("CA").getName());
+        assertThat(actual.get("KR").getCountryCode()).isEqualTo(expected.get("KR").getCountryCode());
+        assertThat(actual.get("KR").getName()).isEqualTo(expected.get("KR").getName());
 
     }
 

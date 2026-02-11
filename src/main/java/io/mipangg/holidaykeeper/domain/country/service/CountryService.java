@@ -7,7 +7,9 @@ import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
 import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
 import io.mipangg.holidaykeeper.global.exception.ErrorCode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,7 @@ public class CountryService {
     private final ExternalApiClient externalApiClient;
     
     @Transactional
-    public List<Country> saveCountries() {
+    public Map<String, Country> saveCountries() {
 
         if (countryRepository.count() > 0L) {
             throw new CustomLogicException(ErrorCode.CONFLICT, "Country 테이블에 이미 데이터가 존재합니다.");
@@ -29,9 +31,10 @@ public class CountryService {
 
         List<ExternalCountryResponse> externalCountries = externalApiClient.getExternalCountries();
 
-        List<Country> countries = new ArrayList<>();
+        Map<String, Country> countries = new HashMap<>();
         for (ExternalCountryResponse countryResponse : externalCountries) {
-            countries.add(
+            countries.put(
+                    countryResponse.countryCode(),
                     Country.builder()
                             .countryCode(countryResponse.countryCode())
                             .name(countryResponse.name())
@@ -39,7 +42,7 @@ public class CountryService {
             );
         }
 
-        countryRepository.saveAll(countries);
+        countryRepository.saveAll(countries.values());
         return countries;
     }
 

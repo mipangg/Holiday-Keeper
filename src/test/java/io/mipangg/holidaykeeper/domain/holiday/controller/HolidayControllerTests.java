@@ -1,6 +1,6 @@
 package io.mipangg.holidaykeeper.domain.holiday.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -38,7 +38,7 @@ class HolidayControllerTests {
                 .andDo(print());
 
         verify(countryService).saveCountries();
-        verify(holidayService).saveHolidays();
+        verify(holidayService).saveHolidays(anyMap());
     }
 
 }
