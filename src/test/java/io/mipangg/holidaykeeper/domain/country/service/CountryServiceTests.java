@@ -46,7 +46,7 @@ class CountryServiceTests {
                 new ExternalCountryResponse("KR", "South Korea")
         );
 
-        when(countryRepository.count()).thenReturn(0L);
+        when(countryRepository.existsBy()).thenReturn(Boolean.FALSE);
         when(externalApiClient.getExternalCountries()).thenReturn(externalCountryResponses);
 
         // List<ExternalCountryResponse> -> Map<String, Country>로 변환
@@ -59,7 +59,7 @@ class CountryServiceTests {
         // countryRepository.saveAll(List<Country>)로 한번에 저장
         Map<String, Country> actual = countryService.saveCountries();
 
-        verify(countryRepository).count();
+        verify(countryRepository).existsBy();
         verify(countryRepository).saveAll(anyCollection());
 
         assertThat(actual).hasSize(expected.size());
@@ -76,7 +76,7 @@ class CountryServiceTests {
     @DisplayName("국가 목록을 저장하려 할 때 country repo가 비어있지 않으면 409가 발생하는지 테스트")
     void saveCountries409FailTest() {
 
-        when(countryRepository.count()).thenReturn(3L);
+        when(countryRepository.existsBy()).thenReturn(Boolean.TRUE);
 
         // 중복 검사?? 두 번 호출 후 저장 데이터 확인해보기
         // countryRepository가 비어 있지 않으면 409 예외 발생
@@ -85,7 +85,8 @@ class CountryServiceTests {
                 () -> {
                     countryService.saveCountries();
                 }
-        ).isInstanceOf(CustomLogicException.class);
+        ).isInstanceOf(CustomLogicException.class)
+                .hasMessage("이미 존재하는 데이터입니다.");
     }
 
 }

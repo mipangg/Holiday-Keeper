@@ -24,7 +24,7 @@ public class CountryService {
     @Transactional
     public Map<String, Country> saveCountries() {
 
-        if (countryRepository.count() > 0L) {
+        if (countryRepository.existsBy()) {
             throw new CustomLogicException(ErrorCode.CONFLICT, "Country 테이블에 이미 데이터가 존재합니다.");
         }
 
