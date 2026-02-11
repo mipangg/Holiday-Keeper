@@ -1,4 +1,4 @@
-package io.mipangg.holidaykeeper.common.dto;
+package io.mipangg.holidaykeeper.global.dto;
 
 public record ExternalCountryResponse(
         String countryCode,

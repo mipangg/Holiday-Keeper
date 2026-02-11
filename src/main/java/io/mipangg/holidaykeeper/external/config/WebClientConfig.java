@@ -1,4 +1,4 @@
-package io.mipangg.holidaykeeper.common.config;
+package io.mipangg.holidaykeeper.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,7 +1,7 @@
-package io.mipangg.holidaykeeper.common.service;
+package io.mipangg.holidaykeeper.global.service;
 
-import io.mipangg.holidaykeeper.common.dto.ExternalCountryResponse;
-import io.mipangg.holidaykeeper.common.dto.ExternalHolidayResponse;
+import io.mipangg.holidaykeeper.global.dto.ExternalCountryResponse;
+import io.mipangg.holidaykeeper.global.dto.ExternalHolidayResponse;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

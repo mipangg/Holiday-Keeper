@@ -1,4 +1,4 @@
-package io.mipangg.holidaykeeper.common.dto;
+package io.mipangg.holidaykeeper.global.dto;
 
 import java.util.List;
 
