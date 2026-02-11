@@ -6,7 +6,6 @@ import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
 import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
 import io.mipangg.holidaykeeper.global.exception.ErrorCode;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

@@ -1,5 +1,8 @@
 package io.mipangg.holidaykeeper.domain.country.service;
 
+import static io.mipangg.holidaykeeper.util.TestUtil.getCountryBrazil;
+import static io.mipangg.holidaykeeper.util.TestUtil.getCountryCanada;
+import static io.mipangg.holidaykeeper.util.TestUtil.getCountryKorea;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -48,9 +51,9 @@ class CountryServiceTests {
 
         // List<ExternalCountryResponse> -> Map<String, Country>로 변환
         Map<String, Country> expected = Map.of(
-                "BR", Country.builder().countryCode("BR").name("Brazil").build(),
-                "CA", Country.builder().countryCode("CA").name("Canada").build(),
-                "KR", Country.builder().countryCode("KR").name("South Korea").build()
+                "BR", getCountryBrazil(),
+                "CA", getCountryCanada(),
+                "KR", getCountryKorea()
         );
 
         // countryRepository.saveAll(List<Country>)로 한번에 저장
