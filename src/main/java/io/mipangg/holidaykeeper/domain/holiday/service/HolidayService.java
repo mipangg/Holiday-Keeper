@@ -86,6 +86,10 @@ public class HolidayService {
                     "해당하는 연도, 국가코드의 공휴일 목록을 찾을 수 없습니다."
             );
         }
+
+        holidayTypeService.deleteHolidayTypes(targetHolidays);
+//        holidayCountyService.deleteHolidayCounties(targetHolidays);
+
         holidayRepository.deleteAll(targetHolidays);
     }
 
