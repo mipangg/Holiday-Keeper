@@ -14,7 +14,6 @@ import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
 import io.mipangg.holidaykeeper.global.exception.ErrorCode;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +61,12 @@ public class HolidayService {
                         .build();
 
                 holidays.add(holiday);
-                holidayTypesDtos.add(new HolidayTypesDto(holiday, ext.types()));
-                holidayCountiesDtos.add(new HolidayCountiesDto(holiday, ext.counties()));
+                if (ext.types() != null && !ext.types().isEmpty()) {
+                    holidayTypesDtos.add(new HolidayTypesDto(holiday, ext.types()));
+                }
+                if (ext.counties() != null && !ext.counties().isEmpty()) {
+                    holidayCountiesDtos.add(new HolidayCountiesDto(holiday, ext.counties()));
+                }
             }
         });
 

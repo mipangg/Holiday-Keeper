@@ -20,22 +20,22 @@ public class TypeService {
     @Transactional
     public Map<String, Type> getOrCreateTypes(Set<String> typeNames) {
         Map<String, Type> result = new HashMap<>();
-        Map<String, Type> existingTypes = new HashMap<>();
-        typeRepository.findByTypeIn(typeNames).forEach(type ->
-                existingTypes.put(type.getType(), type)
-        );
+        List<Type> existingTypes = typeRepository.findByTypeIn(typeNames);
+        if (existingTypes != null && !existingTypes.isEmpty()) {
+            existingTypes.forEach(type -> result.put(type.getType(), type));
+        }
 
         List<Type> newTypes = new ArrayList<>();
 
         for (String typeName : typeNames) {
-            Type type = existingTypes.get(typeName);
+            Type type = result.get(typeName);
             if (type == null) {
                 type = Type.builder()
                         .type(typeName)
                         .build();
                 newTypes.add(type);
+                result.put(typeName, type);
             }
-            result.put(typeName, type);
         }
 
         if (!newTypes.isEmpty()) {

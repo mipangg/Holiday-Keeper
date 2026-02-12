@@ -6,6 +6,7 @@ import io.mipangg.holidaykeeper.domain.county.repository.CountyRepository;
 import io.mipangg.holidaykeeper.domain.holidayCounty.dto.CountyElemDto;
 import java.awt.print.Pageable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,12 +26,13 @@ public class CountyService {
     public Map<String, County> getOrCreateCounties(Set<CountyElemDto> countyDtos) {
         Set<String> countyNames = new HashSet<>();
         countyDtos.forEach(dto -> countyNames.addAll(dto.countyNames()));
-
         Map<String, County> counties = new HashMap<>();
         List<County> newCounties = new ArrayList<>();
-        countyRepository.findByCountyIn(countyNames).forEach(county ->
-                counties.put(county.getCounty(), county)
-        );
+
+        List<County> existingCounties = countyRepository.findByCountyIn(countyNames);
+        if (existingCounties != null && !existingCounties.isEmpty()) {
+            existingCounties.forEach(county -> counties.put(county.getCounty(), county));
+        }
 
         countyDtos.forEach(dto -> {
             Country country = dto.country();
