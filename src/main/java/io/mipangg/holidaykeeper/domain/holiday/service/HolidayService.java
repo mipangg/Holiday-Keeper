@@ -88,7 +88,7 @@ public class HolidayService {
         }
 
         holidayTypeService.deleteHolidayTypes(targetHolidays);
-//        holidayCountyService.deleteHolidayCounties(targetHolidays);
+        holidayCountyService.deleteHolidayCounties(targetHolidays);
 
         holidayRepository.deleteAll(targetHolidays);
     }

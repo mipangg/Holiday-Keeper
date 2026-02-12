@@ -10,6 +10,7 @@ import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
+import io.mipangg.holidaykeeper.domain.holidayCounty.entity.HolidayCounty;
 import io.mipangg.holidaykeeper.domain.holidayCounty.repository.HolidayCountyRepository;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,39 @@ class HolidayCountyServiceTests {
         holidayCountyService.saveHolidayCounties(holidayCountiesDtos);
 
         verify(holidayCountyRepository).saveAll(anySet());
+    }
+
+    @Test
+    @DisplayName("holidayCounty 삭제 테스트")
+    void deleteHolidayCountiesTest() {
+        List<Holiday> holidays = List.of(getHolidayCanada());
+        Country canada = holidays.getFirst().getCountry();
+        List<HolidayCounty> targetHolidayCounties = List.of(
+                HolidayCounty.builder()
+                        .county(
+                                County.builder()
+                                        .county("CA-AB")
+                                        .country(canada)
+                                        .build()
+                        )
+                        .build(),
+                HolidayCounty.builder()
+                        .county(
+                                County.builder()
+                                        .county("CA-PE")
+                                        .country(canada)
+                                        .build()
+                        )
+                        .build()
+        );
+
+        when(holidayCountyRepository.findByHolidayIn(holidays)).thenReturn(targetHolidayCounties);
+
+        holidayCountyService.deleteHolidayCounties(holidays);
+
+        verify(holidayCountyRepository).findByHolidayIn(holidays);
+        verify(holidayCountyRepository).deleteAll(targetHolidayCounties);
+
     }
 
 }
