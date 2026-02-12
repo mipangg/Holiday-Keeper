@@ -77,6 +77,11 @@ public class HolidayService {
 
     }
 
+    @Transactional
+    public void deleteHolidays(Integer year, String countryCode) {
+
+    }
+
     private static String createUniqueKey(ExternalHolidayResponse ext) {
         return ext.date() + "|" + ext.localName() + "|" + ext.countryCode();
     }
@@ -103,5 +108,4 @@ public class HolidayService {
         }
         return result;
     }
-
 }
