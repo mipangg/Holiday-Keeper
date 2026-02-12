@@ -1,6 +1,18 @@
 package io.mipangg.holidaykeeper.domain.holidayCounty.service;
 
+import static io.mipangg.holidaykeeper.util.TestUtil.getHolidayCanada;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.county.entity.County;
+import io.mipangg.holidaykeeper.domain.county.service.CountyService;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
+import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holidayCounty.repository.HolidayCountyRepository;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,11 +29,33 @@ class HolidayCountyServiceTests {
     @Mock
     private HolidayCountyRepository holidayCountyRepository;
 
+    @Mock
+    private CountyService countyService;
+
     @Test
     @DisplayName("holidayCounty 저장 기능 테스트")
     void saveHolidayCountiesTest() {
+        Holiday holidayCanada = getHolidayCanada();
+        Country canada = holidayCanada.getCountry();
+        List<HolidayCountiesDto> holidayCountiesDtos = List.of(
+                new HolidayCountiesDto(
+                        holidayCanada,
+                        List.of(
+                                "CA-AB",
+                                "CA-PE"
+                        )
+                )
+        );
+        Map<String, County> counties = Map.of(
+                "CA-AB", County.builder().county("CA-AB").country(canada).build(),
+                "CA-PE", County.builder().county("CA-PE").country(canada).build()
+        );
 
+        when(countyService.getOrCreateCounties(anySet())).thenReturn(counties);
 
+        holidayCountyService.saveHolidayCounties(holidayCountiesDtos);
+
+        verify(holidayCountyRepository).saveAll(anySet());
     }
 
 }

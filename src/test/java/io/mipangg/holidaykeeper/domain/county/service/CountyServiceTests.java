@@ -14,6 +14,7 @@ import io.mipangg.holidaykeeper.domain.county.repository.CountyRepository;
 import io.mipangg.holidaykeeper.domain.holidayCounty.dto.CountyElemDto;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +36,7 @@ class CountyServiceTests {
     void getOrCreateCountiesTest() {
 
         Country canada = getCountryCanada();
-        List<CountyElemDto> countyDtos = List.of(
+        Set<CountyElemDto> countyDtos = Set.of(
                 new CountyElemDto(
                         canada,
                         List.of(

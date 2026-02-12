@@ -22,7 +22,7 @@ public class CountyService {
     private final CountyRepository countyRepository;
 
     @Transactional
-    public Map<String, County> getOrCreateCounties(List<CountyElemDto> countyDtos) {
+    public Map<String, County> getOrCreateCounties(Set<CountyElemDto> countyDtos) {
         Set<String> countyNames = new HashSet<>();
         countyDtos.forEach(dto -> countyNames.addAll(dto.countyNames()));
 
