@@ -7,6 +7,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayTypesDto;
+import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
+import io.mipangg.holidaykeeper.domain.holidayType.entity.HolidayType;
 import io.mipangg.holidaykeeper.domain.holidayType.repository.HolidayTypeRepository;
 import io.mipangg.holidaykeeper.domain.type.entity.Type;
 import io.mipangg.holidaykeeper.domain.type.service.TypeService;
@@ -52,6 +54,31 @@ class HolidayTypeServiceTests {
         holidayTypeService.saveHolidayTypes(holidayTypesDtos);
 
         verify(holidayTypeRepository).saveAll(anyList());
+
+    }
+
+    @Test
+    @DisplayName("holidayType 삭제 테스트")
+    void deleteHolidayTypesTest() {
+
+        List<Holiday> holidays = List.of(getHolidayBrazil());
+        List<HolidayType> targetHolidayTypes = List.of(
+                HolidayType.builder()
+                        .type(Type.builder().type("Public").build())
+                        .holiday(holidays.getFirst())
+                        .build(),
+                HolidayType.builder()
+                        .type(Type.builder().type("Bank").build())
+                        .holiday(holidays.getFirst())
+                        .build()
+        );
+
+        when(holidayTypeRepository.findByHolidayIn(holidays)).thenReturn(targetHolidayTypes);
+
+        holidayTypeService.deleteHolidayTypes(holidays);
+
+        verify(holidayTypeRepository).findByHolidayIn(anyList());
+        verify(holidayTypeRepository).deleteAll(targetHolidayTypes);
 
     }
 

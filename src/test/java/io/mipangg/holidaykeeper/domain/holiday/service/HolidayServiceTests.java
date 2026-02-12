@@ -1,10 +1,9 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import static io.mipangg.holidaykeeper.util.TestUtil.getCountries;
+import static io.mipangg.holidaykeeper.util.TestUtil.getHolidayKorea;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -12,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.properties.HolidayProperties;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
 import io.mipangg.holidaykeeper.domain.holidayCounty.service.HolidayCountyService;
@@ -40,12 +40,6 @@ class HolidayServiceTests {
 
     @Mock
     private ExternalApiClient externalApiClient;
-
-    @Mock
-    private HolidayCountyService holidayCountyService;
-
-    @Mock
-    private HolidayTypeService holidayTypeService;
 
     @Mock
     private HolidayProperties holidayProperties;
@@ -105,6 +99,42 @@ class HolidayServiceTests {
                 }
         ).isInstanceOf(CustomLogicException.class)
                 .hasMessage("이미 존재하는 데이터입니다.");
+
+    }
+
+    @Test
+    @DisplayName("holiday 삭제 테스트")
+    void deleteHolidaysTest() {
+
+        int year = 2026;
+        String countryCode = "KR";
+
+        List<Holiday> targetHolidays = List.of(
+                getHolidayKorea()
+        );
+
+        when(holidayRepository.findByYearAndCountryCode(year, countryCode))
+                .thenReturn(targetHolidays);
+
+        holidayService.deleteHolidays(year, countryCode);
+
+        verify(holidayRepository).findByYearAndCountryCode(year, countryCode);
+        verify(holidayRepository).deleteAll(targetHolidays);
+
+    }
+
+    @Test
+    @DisplayName("삭제하려는 연도, 국가코드에 해당하는 공휴일 목록이 없을 때 404 발생 테스트")
+    void deleteHolidays404FailTest() {
+
+        when(holidayRepository.findByYearAndCountryCode(anyInt(), anyString()))
+                .thenReturn(List.of());
+
+        assertThatThrownBy(
+                () -> {
+                    holidayService.deleteHolidays(anyInt(), anyString());
+                }
+        ).isInstanceOf(CustomLogicException.class);
 
     }
 

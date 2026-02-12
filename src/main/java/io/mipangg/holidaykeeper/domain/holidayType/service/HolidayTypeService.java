@@ -44,4 +44,13 @@ public class HolidayTypeService {
 
         holidayTypeRepository.saveAll(holidayTypes);
     }
+
+    @Transactional
+    public void deleteHolidayTypes(List<Holiday> holidays) {
+        List<HolidayType> targetHolidayTypes = holidayTypeRepository.findByHolidayIn(holidays);
+
+        if (!targetHolidayTypes.isEmpty()) {
+            holidayTypeRepository.deleteAll(targetHolidayTypes);
+        }
+    }
 }

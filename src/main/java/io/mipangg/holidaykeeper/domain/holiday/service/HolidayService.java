@@ -77,6 +77,22 @@ public class HolidayService {
 
     }
 
+    @Transactional
+    public void deleteHolidays(Integer year, String countryCode) {
+        List<Holiday> targetHolidays = holidayRepository.findByYearAndCountryCode(year, countryCode);
+        if (targetHolidays.isEmpty()) {
+            throw new CustomLogicException(
+                    ErrorCode.NOT_FOUND,
+                    "해당하는 연도, 국가코드의 공휴일 목록을 찾을 수 없습니다."
+            );
+        }
+
+        holidayTypeService.deleteHolidayTypes(targetHolidays);
+        holidayCountyService.deleteHolidayCounties(targetHolidays);
+
+        holidayRepository.deleteAll(targetHolidays);
+    }
+
     private static String createUniqueKey(ExternalHolidayResponse ext) {
         return ext.date() + "|" + ext.localName() + "|" + ext.countryCode();
     }
@@ -103,5 +119,4 @@ public class HolidayService {
         }
         return result;
     }
-
 }

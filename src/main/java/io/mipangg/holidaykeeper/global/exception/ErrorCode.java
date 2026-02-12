@@ -13,7 +13,7 @@ public enum ErrorCode {
     /*
      * 404 NOT_FOUND: 리소스를 찾을 수 없음
      */
-    NOT_FOUND(HttpStatus.NOT_FOUND, "찾을 수 없습니다."),
+    NOT_FOUND(HttpStatus.NOT_FOUND, "테이터를 찾을 수 없습니다."),
 
     /*
      * 409 CONFLICT

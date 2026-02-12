@@ -48,4 +48,13 @@ public class HolidayCountyService {
         holidayCountyRepository.saveAll(holidayCounties);
     }
 
+    @Transactional
+    public void deleteHolidayCounties(List<Holiday> holidays) {
+        List<HolidayCounty> targetHolidayCounties =
+                holidayCountyRepository.findByHolidayIn(holidays);
+
+        if (targetHolidayCounties != null && !targetHolidayCounties.isEmpty()) {
+            holidayCountyRepository.deleteAll(targetHolidayCounties);
+        }
+    }
 }
