@@ -1,7 +1,7 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
-import static io.mipangg.holidaykeeper.util.TestUtil.getCountries;
-import static io.mipangg.holidaykeeper.util.TestUtil.getHolidayKorea;
+import static io.mipangg.holidaykeeper.util.TestUtil.genCountries;
+import static io.mipangg.holidaykeeper.util.TestUtil.genHolidayKorea;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -51,7 +51,7 @@ class HolidayServiceTests {
         int fetchYear = 1;
 
         Map<String, Country> countries = new HashMap<>();
-        getCountries().forEach(c -> {
+        genCountries().forEach(c -> {
             countries.put(c.getCountryCode(), c);
         });
 
@@ -87,7 +87,7 @@ class HolidayServiceTests {
     void saveHolidays409FailTest() {
 
         Map<String, Country> countries = new HashMap<>();
-        getCountries().forEach(c -> {
+        genCountries().forEach(c -> {
             countries.put(c.getCountryCode(), c);
         });
 
@@ -110,7 +110,7 @@ class HolidayServiceTests {
         String countryCode = "KR";
 
         List<Holiday> targetHolidays = List.of(
-                getHolidayKorea()
+                genHolidayKorea()
         );
 
         when(holidayRepository.findByYearAndCountryCode(year, countryCode))

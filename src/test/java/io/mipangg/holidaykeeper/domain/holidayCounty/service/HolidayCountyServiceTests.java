@@ -1,6 +1,6 @@
 package io.mipangg.holidaykeeper.domain.holidayCounty.service;
 
-import static io.mipangg.holidaykeeper.util.TestUtil.getHolidayCanada;
+import static io.mipangg.holidaykeeper.util.TestUtil.genHolidayCanada;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,7 +36,7 @@ class HolidayCountyServiceTests {
     @Test
     @DisplayName("holidayCounty 저장 기능 테스트")
     void saveHolidayCountiesTest() {
-        Holiday holidayCanada = getHolidayCanada();
+        Holiday holidayCanada = genHolidayCanada();
         Country canada = holidayCanada.getCountry();
         List<HolidayCountiesDto> holidayCountiesDtos = List.of(
                 new HolidayCountiesDto(
@@ -62,7 +62,7 @@ class HolidayCountyServiceTests {
     @Test
     @DisplayName("holidayCounty 삭제 테스트")
     void deleteHolidayCountiesTest() {
-        List<Holiday> holidays = List.of(getHolidayCanada());
+        List<Holiday> holidays = List.of(genHolidayCanada());
         Country canada = holidays.getFirst().getCountry();
         List<HolidayCounty> targetHolidayCounties = List.of(
                 HolidayCounty.builder()

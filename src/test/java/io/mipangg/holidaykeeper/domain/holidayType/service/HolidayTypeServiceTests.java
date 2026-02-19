@@ -1,6 +1,6 @@
 package io.mipangg.holidaykeeper.domain.holidayType.service;
 
-import static io.mipangg.holidaykeeper.util.TestUtil.getHolidayBrazil;
+import static io.mipangg.holidaykeeper.util.TestUtil.genHolidayBrazil;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.verify;
@@ -14,7 +14,6 @@ import io.mipangg.holidaykeeper.domain.type.entity.Type;
 import io.mipangg.holidaykeeper.domain.type.service.TypeService;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +39,7 @@ class HolidayTypeServiceTests {
 
         List<HolidayTypesDto> holidayTypesDtos = List.of(
                 new HolidayTypesDto(
-                        getHolidayBrazil(),
+                        genHolidayBrazil(),
                         List.of("Public", "Bank")
                 )
         );
@@ -61,7 +60,7 @@ class HolidayTypeServiceTests {
     @DisplayName("holidayType 삭제 테스트")
     void deleteHolidayTypesTest() {
 
-        List<Holiday> holidays = List.of(getHolidayBrazil());
+        List<Holiday> holidays = List.of(genHolidayBrazil());
         List<HolidayType> targetHolidayTypes = List.of(
                 HolidayType.builder()
                         .type(Type.builder().type("Public").build())

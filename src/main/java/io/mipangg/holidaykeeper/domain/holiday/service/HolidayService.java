@@ -1,7 +1,10 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
+import io.mipangg.holidaykeeper.domain.common.PageResponse;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayListReadResponse;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayReadRequest;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayTypesDto;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
 import io.mipangg.holidaykeeper.domain.holiday.properties.HolidayProperties;
@@ -12,6 +15,10 @@ import io.mipangg.holidaykeeper.external.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.external.service.ExternalApiClient;
 import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
 import io.mipangg.holidaykeeper.global.exception.ErrorCode;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,7 +71,7 @@ public class HolidayService {
                 if (ext.types() != null && !ext.types().isEmpty()) {
                     holidayTypesDtos.add(new HolidayTypesDto(holiday, ext.types()));
                 }
-                if (ext.counties() != null && !ext.counties().isEmpty()) {
+                if (!ext.global() && ext.counties() != null) {
                     holidayCountiesDtos.add(new HolidayCountiesDto(holiday, ext.counties()));
                 }
             }
@@ -91,6 +98,15 @@ public class HolidayService {
         holidayCountyService.deleteHolidayCounties(targetHolidays);
 
         holidayRepository.deleteAll(targetHolidays);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<HolidayListReadResponse> searchHolidays(
+            Integer year,
+            String countryCode,
+            HolidayReadRequest request
+    ) {
+        return null;
     }
 
     private static String createUniqueKey(ExternalHolidayResponse ext) {

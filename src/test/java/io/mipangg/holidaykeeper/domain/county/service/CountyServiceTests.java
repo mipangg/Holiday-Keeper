@@ -1,7 +1,7 @@
 package io.mipangg.holidaykeeper.domain.county.service;
 
 
-import static io.mipangg.holidaykeeper.util.TestUtil.getCountryCanada;
+import static io.mipangg.holidaykeeper.util.TestUtil.genCountryCanada;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -35,7 +35,7 @@ class CountyServiceTests {
     @DisplayName("county가 이미 존재하면 반환하고 없으면 저장 후 반환하는 기능 테스트")
     void getOrCreateCountiesTest() {
 
-        Country canada = getCountryCanada();
+        Country canada = genCountryCanada();
         Set<CountyElemDto> countyDtos = Set.of(
                 new CountyElemDto(
                         canada,

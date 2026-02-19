@@ -10,8 +10,8 @@ import org.springframework.data.domain.Page;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PageResponse<T> {
     private List<T> content;        // 현재 페이지 데이터 목록
-    private int page;        // 현재 페이지 번호 (0부터 시작)
-    private int size;           // 페이지 크기
+    private int page;        // 조회할 페이지 번호 (0부터 시작)
+    private int size;           // 한 페이지당 조회할 데이터 개수
     private int totalPages;         // 전체 페이지 수
     private long totalElements;     // 전체 데이터 수
     private boolean hasNext;        // 다음 페이지 존재 여부
