@@ -1,12 +1,12 @@
 package io.mipangg.holidaykeeper.util;
 
-import io.mipangg.holidaykeeper.domain.common.PageResponse;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayListReadResponse;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
+import io.mipangg.holidaykeeper.domain.type.entity.Type;
 import java.time.LocalDate;
 import java.util.List;
-import org.springframework.data.domain.Page;
 
 public class TestUtil {
 
@@ -37,6 +37,7 @@ public class TestUtil {
 
     public static Holiday genHolidayBrazil() {
         return Holiday.builder()
+                .id(1L)
                 .date(LocalDate.of(2026, 2, 16))
                 .localName("Carnaval")
                 .name("Carnival")
@@ -49,6 +50,7 @@ public class TestUtil {
 
     public static Holiday genHolidayCanada() {
         return Holiday.builder()
+                .id(2L)
                 .date(LocalDate.of(2026, 4, 6))
                 .localName("Easter Monday")
                 .name("Easter Monday")
@@ -61,6 +63,7 @@ public class TestUtil {
 
     public static Holiday genHolidayKorea() {
         return Holiday.builder()
+                .id(3L)
                 .date(LocalDate.of(2026, 1, 1))
                 .localName("새해")
                 .name("New Year's Day")
@@ -68,6 +71,32 @@ public class TestUtil {
                 .fixed(false)
                 .global(true)
                 .launchYear(null)
+                .build();
+    }
+
+    public static Type genTypePublic() {
+        return Type.builder()
+                .type("Public")
+                .build();
+    }
+
+    public static Type genTypeBank() {
+        return Type.builder()
+                .type("Bank")
+                .build();
+    }
+
+    public static County genCountyAb() {
+        return County.builder()
+                .county("CA-AB")
+                .country(genCountryCanada())
+                .build();
+    }
+
+    public static County genCountyPe() {
+        return County.builder()
+                .county("CA-PE")
+                .country(genCountryCanada())
                 .build();
     }
 
@@ -93,6 +122,5 @@ public class TestUtil {
                 )
         );
     }
-
 
 }

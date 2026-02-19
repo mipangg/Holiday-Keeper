@@ -8,6 +8,7 @@ import io.mipangg.holidaykeeper.domain.holidayCounty.dto.CountyElemDto;
 import io.mipangg.holidaykeeper.domain.holidayCounty.entity.HolidayCounty;
 import io.mipangg.holidaykeeper.domain.holidayCounty.repository.HolidayCountyRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +50,28 @@ public class HolidayCountyService {
     }
 
     @Transactional
-    public void deleteHolidayCounties(List<Holiday> holidays) {
+    public void deleteHolidayCounties(List<Long> holidayIds) {
         List<HolidayCounty> targetHolidayCounties =
-                holidayCountyRepository.findByHolidayIn(holidays);
+                holidayCountyRepository.findByHolidayIdIn(holidayIds);
 
         if (targetHolidayCounties != null && !targetHolidayCounties.isEmpty()) {
             holidayCountyRepository.deleteAll(targetHolidayCounties);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, List<String>> getHolidayCountyMapByHolidayIds(List<Long> holidayIds) {
+        Map<Long, List<String>> holidayCountyMap = new HashMap<>();
+
+        List<HolidayCounty> holidayCounties = holidayCountyRepository.findByHolidayIdIn(holidayIds);
+        holidayCounties.forEach(holidayCounty -> {
+            Long holidayId = holidayCounty.getHoliday().getId();
+            String county = holidayCounty.getCounty().getCounty();
+            holidayCountyMap
+                    .computeIfAbsent(holidayId, k -> new ArrayList<>())
+                    .add(county);
+        });
+
+        return holidayCountyMap;
     }
 }

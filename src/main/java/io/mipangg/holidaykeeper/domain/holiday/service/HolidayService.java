@@ -2,6 +2,7 @@ package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import io.mipangg.holidaykeeper.domain.common.PageResponse;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayListReadResponse;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayReadRequest;
@@ -11,21 +12,23 @@ import io.mipangg.holidaykeeper.domain.holiday.properties.HolidayProperties;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
 import io.mipangg.holidaykeeper.domain.holidayCounty.service.HolidayCountyService;
 import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
+import io.mipangg.holidaykeeper.domain.type.entity.Type;
 import io.mipangg.holidaykeeper.external.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.external.service.ExternalApiClient;
 import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
 import io.mipangg.holidaykeeper.global.exception.ErrorCode;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,8 +97,10 @@ public class HolidayService {
             );
         }
 
-        holidayTypeService.deleteHolidayTypes(targetHolidays);
-        holidayCountyService.deleteHolidayCounties(targetHolidays);
+        List<Long> holidayIds = getHolidayIds(targetHolidays);
+
+        holidayTypeService.deleteHolidayTypes(holidayIds);
+        holidayCountyService.deleteHolidayCounties(holidayIds);
 
         holidayRepository.deleteAll(targetHolidays);
     }
@@ -106,10 +111,50 @@ public class HolidayService {
             String countryCode,
             HolidayReadRequest request
     ) {
-        return null;
+
+        Pageable pageable = PageRequest.of(
+                request.page(),
+                request.size(),
+                Sort.by("date").ascending()
+        );
+
+        Page<Holiday> page = holidayRepository.searchHoliday(
+                year,
+                countryCode,
+                request.type(),
+                request.from(),
+                request.to(),
+                pageable
+        );
+
+        List<Long> holidayIds = getHolidayIds(page.getContent());
+        Map<Long, List<String>> holidayCountyMap =
+                holidayCountyService.getHolidayCountyMapByHolidayIds(holidayIds);
+        Map<Long, List<String>> holidayTypeMap =
+                holidayTypeService.getHolidayTypeMapByHolidayIds(holidayIds);
+
+        Page<HolidayListReadResponse> respPage = page.map(holiday ->
+                new HolidayListReadResponse(
+                        holiday.getId(),
+                        holiday.getDate(),
+                        holiday.getLocalName(),
+                        holiday.getName(),
+                        holiday.getCountry().getCountryCode(),
+                        holidayCountyMap.getOrDefault(holiday.getId(), List.of()),
+                        holidayTypeMap.getOrDefault(holiday.getId(), List.of())
+                )
+        );
+
+        return new PageResponse<>(respPage);
     }
 
-    private static String createUniqueKey(ExternalHolidayResponse ext) {
+    private List<Long> getHolidayIds(List<Holiday> holidays) {
+        return holidays.stream()
+                .map(Holiday::getId)
+                .toList();
+    }
+
+    private String createUniqueKey(ExternalHolidayResponse ext) {
         return ext.date() + "|" + ext.localName() + "|" + ext.countryCode();
     }
 

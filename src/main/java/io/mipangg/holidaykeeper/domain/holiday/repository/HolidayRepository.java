@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface HolidayRepository extends JpaRepository<Holiday, Long> {
+public interface HolidayRepository extends JpaRepository<Holiday, Long>, HolidayCustomRepository {
 
     boolean existsBy();
 
@@ -16,4 +16,5 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
             @Param("year") Integer year,
             @Param("countryCode") String countryCode
     );
+
 }
