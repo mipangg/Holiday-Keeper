@@ -1,11 +1,13 @@
 package io.mipangg.holidaykeeper.domain.holidayCounty.service;
 
-import static io.mipangg.holidaykeeper.util.TestUtil.getHolidayCanada;
+import static io.mipangg.holidaykeeper.util.TestUtil.genCountyAb;
+import static io.mipangg.holidaykeeper.util.TestUtil.genCountyPe;
+import static io.mipangg.holidaykeeper.util.TestUtil.genHolidayCanada;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
@@ -14,6 +16,7 @@ import io.mipangg.holidaykeeper.domain.holidayCounty.entity.HolidayCounty;
 import io.mipangg.holidaykeeper.domain.holidayCounty.repository.HolidayCountyRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,8 +39,7 @@ class HolidayCountyServiceTests {
     @Test
     @DisplayName("holidayCounty 저장 기능 테스트")
     void saveHolidayCountiesTest() {
-        Holiday holidayCanada = getHolidayCanada();
-        Country canada = holidayCanada.getCountry();
+        Holiday holidayCanada = genHolidayCanada();
         List<HolidayCountiesDto> holidayCountiesDtos = List.of(
                 new HolidayCountiesDto(
                         holidayCanada,
@@ -48,8 +50,8 @@ class HolidayCountyServiceTests {
                 )
         );
         Map<String, County> counties = Map.of(
-                "CA-AB", County.builder().county("CA-AB").country(canada).build(),
-                "CA-PE", County.builder().county("CA-PE").country(canada).build()
+                "CA-AB", genCountyAb(),
+                "CA-PE", genCountyPe()
         );
 
         when(countyService.getOrCreateCounties(anySet())).thenReturn(counties);
@@ -62,34 +64,46 @@ class HolidayCountyServiceTests {
     @Test
     @DisplayName("holidayCounty 삭제 테스트")
     void deleteHolidayCountiesTest() {
-        List<Holiday> holidays = List.of(getHolidayCanada());
-        Country canada = holidays.getFirst().getCountry();
+        List<Holiday> holidays = List.of(genHolidayCanada());
+        List<Long> holidayIds = holidays.stream()
+                .map(Holiday::getId)
+                .collect(Collectors.toList());
         List<HolidayCounty> targetHolidayCounties = List.of(
                 HolidayCounty.builder()
-                        .county(
-                                County.builder()
-                                        .county("CA-AB")
-                                        .country(canada)
-                                        .build()
-                        )
+                        .county(genCountyAb())
                         .build(),
                 HolidayCounty.builder()
-                        .county(
-                                County.builder()
-                                        .county("CA-PE")
-                                        .country(canada)
-                                        .build()
-                        )
+                        .county(genCountyPe())
                         .build()
         );
 
-        when(holidayCountyRepository.findByHolidayIn(holidays)).thenReturn(targetHolidayCounties);
+        when(holidayCountyRepository.findByHolidayIdIn(holidayIds)).thenReturn(targetHolidayCounties);
 
-        holidayCountyService.deleteHolidayCounties(holidays);
+        holidayCountyService.deleteHolidayCounties(holidayIds);
 
-        verify(holidayCountyRepository).findByHolidayIn(holidays);
+        verify(holidayCountyRepository).findByHolidayIdIn(holidayIds);
         verify(holidayCountyRepository).deleteAll(targetHolidayCounties);
 
+    }
+
+    @Test
+    @DisplayName("holidayId 목록으로 holidayCounty를 조회하여 map으로 반환하는 기능 테스트")
+    void getHolidayCountyMapByHolidayIdsTest() {
+
+        List<Long> holidayIds = List.of(1L, 2L);
+        List<HolidayCounty> holidayCounties = List.of(
+                HolidayCounty.builder().holiday(genHolidayCanada()).county(genCountyAb()).build(),
+                HolidayCounty.builder().holiday(genHolidayCanada()).county(genCountyPe()).build()
+        );
+
+        when(holidayCountyRepository.findByHolidayIdIn(holidayIds)).thenReturn(holidayCounties);
+
+        Map<Long, List<String>> result = holidayCountyService
+                .getHolidayCountyMapByHolidayIds(holidayIds);
+
+        assertThat(result.get(2L)).hasSize(2);
+        assertThat(result.get(2L).getFirst()).isEqualTo("CA-AB");
+        assertThat(result.get(2L).getLast()).isEqualTo("CA-PE");
     }
 
 }

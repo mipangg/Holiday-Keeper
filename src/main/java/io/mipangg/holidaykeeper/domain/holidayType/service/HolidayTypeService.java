@@ -7,6 +7,7 @@ import io.mipangg.holidaykeeper.domain.holidayType.repository.HolidayTypeReposit
 import io.mipangg.holidaykeeper.domain.type.entity.Type;
 import io.mipangg.holidaykeeper.domain.type.service.TypeService;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +47,27 @@ public class HolidayTypeService {
     }
 
     @Transactional
-    public void deleteHolidayTypes(List<Holiday> holidays) {
-        List<HolidayType> targetHolidayTypes = holidayTypeRepository.findByHolidayIn(holidays);
+    public void deleteHolidayTypes(List<Long> holidayIds) {
+        List<HolidayType> targetHolidayTypes = holidayTypeRepository.findByHolidayIdIn(holidayIds);
 
         if (!targetHolidayTypes.isEmpty()) {
             holidayTypeRepository.deleteAll(targetHolidayTypes);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, List<String>> getHolidayTypeMapByHolidayIds(List<Long> holidayIds) {
+        Map<Long, List<String>> holidayTypeMap = new HashMap<>();
+
+        List<HolidayType> holidayTypes = holidayTypeRepository.findByHolidayIdIn(holidayIds);
+        holidayTypes.forEach(holidayType -> {
+            Long holidayId = holidayType.getHoliday().getId();
+            String type = holidayType.getType().getType();
+            holidayTypeMap
+                    .computeIfAbsent(holidayId, k -> new ArrayList<>())
+                    .add(type);
+        });
+
+        return holidayTypeMap;
     }
 }
