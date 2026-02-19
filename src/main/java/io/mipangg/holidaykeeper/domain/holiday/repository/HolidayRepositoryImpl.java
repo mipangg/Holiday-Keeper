@@ -29,8 +29,8 @@ public class HolidayRepositoryImpl implements HolidayCustomRepository {
             Integer year,
             String countryCode,
             String typeName,
-            Integer from,
-            Integer to,
+            LocalDate from,
+            LocalDate to,
             Pageable pageable
     ) {
 
@@ -53,8 +53,8 @@ public class HolidayRepositoryImpl implements HolidayCustomRepository {
                         holiday.date.between(startOfYear, endOfYear),
                         country.countryCode.eq(countryCode),
                         typeEq(typeName),
-                        fromGoe(year, from),
-                        toLoe(year, to)
+                        fromGoe(from),
+                        toLoe(to)
                 )
                 .orderBy(holiday.date.asc())
                 .distinct()
@@ -90,8 +90,8 @@ public class HolidayRepositoryImpl implements HolidayCustomRepository {
                         holiday.date.between(startOfYear, endOfYear),
                         country.countryCode.eq(countryCode),
                         typeEq(typeName),
-                        fromGoe(year, from),
-                        toLoe(year, to)
+                        fromGoe(from),
+                        toLoe(to)
                 )
                 .fetchOne();
 
@@ -102,14 +102,12 @@ public class HolidayRepositoryImpl implements HolidayCustomRepository {
         return typeName == null ? null : QType.type1.type.eq(typeName);
     }
 
-    private BooleanExpression fromGoe(Integer year, Integer from) {
-        if (from == null) return null;
-        return QHoliday.holiday.date.goe(LocalDate.of(year, 1, 1).withDayOfYear(from));
+    private BooleanExpression fromGoe(LocalDate from) {
+        return from == null ? null : QHoliday.holiday.date.goe(from);
     }
 
-    private BooleanExpression toLoe(Integer year, Integer to) {
-        if (to == null) return null;
-        return QHoliday.holiday.date.loe(LocalDate.of(year, 1, 1).withDayOfYear(to));
+    private BooleanExpression toLoe(LocalDate to) {
+        return to == null ? null : QHoliday.holiday.date.loe(to);
     }
 
 }

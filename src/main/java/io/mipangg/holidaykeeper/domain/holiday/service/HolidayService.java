@@ -2,7 +2,6 @@ package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import io.mipangg.holidaykeeper.domain.common.PageResponse;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
-import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayListReadResponse;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayReadRequest;
@@ -12,7 +11,6 @@ import io.mipangg.holidaykeeper.domain.holiday.properties.HolidayProperties;
 import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
 import io.mipangg.holidaykeeper.domain.holidayCounty.service.HolidayCountyService;
 import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
-import io.mipangg.holidaykeeper.domain.type.entity.Type;
 import io.mipangg.holidaykeeper.external.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.external.service.ExternalApiClient;
 import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
@@ -23,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -112,6 +109,8 @@ public class HolidayService {
             HolidayReadRequest request
     ) {
 
+        validateDateYear(year, request);
+
         Pageable pageable = PageRequest.of(
                 request.page(),
                 request.size(),
@@ -179,5 +178,15 @@ public class HolidayService {
             result.add(thisYear - i);
         }
         return result;
+    }
+
+    private static void validateDateYear(Integer year, HolidayReadRequest request) {
+        if (request.from() != null && request.from().getYear() != year) {
+            throw new CustomLogicException(ErrorCode.BAD_REQUEST, "잘못된 조회 시작 날짜 입니다.");
+        }
+
+        if (request.to() != null && request.to().getYear() != year) {
+            throw new CustomLogicException(ErrorCode.BAD_REQUEST, "잘못된 조회 종료 날짜 입니다.");
+        }
     }
 }

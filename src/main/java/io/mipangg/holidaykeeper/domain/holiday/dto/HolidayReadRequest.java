@@ -5,6 +5,8 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 public record HolidayReadRequest(
         @Schema(description = "조회할 페이지 번호 (기본값: 0, 0부터 시작)")
@@ -22,14 +24,14 @@ public record HolidayReadRequest(
         String type,
 
         @Schema(description = "조회 시작 날짜", example = "2025-01-01")
-        @Positive
         @Nullable
-        Integer from,
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate from,
 
         @Schema(description = "조회 종료 날짜", example = "2025-03-31")
-        @Positive
         @Nullable
-        Integer to
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate to
 ) {
     public HolidayReadRequest {
         if (page == null) {
