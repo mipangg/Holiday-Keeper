@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -98,6 +99,20 @@ class HolidayControllerTests {
                 .andExpect(jsonPath("$.hasNext").value(false))
                 .andDo(print());
 
+    }
+
+    @Test
+    @DisplayName("공휴일 데이터 재동기화 테스트")
+    void upsertHolidaysTest() throws Exception {
+
+        int year = 2026;
+        String countryCode = "KR";
+
+        mockMvc.perform(put("/holidays/{year}/{countryCode}", year, countryCode))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        verify(holidayService).upsertHolidays(year, countryCode);
 
     }
 

@@ -15,6 +15,9 @@ import io.mipangg.holidaykeeper.external.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.external.service.ExternalApiClient;
 import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
 import io.mipangg.holidaykeeper.global.exception.ErrorCode;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -145,6 +148,10 @@ public class HolidayService {
         );
 
         return new PageResponse<>(respPage);
+    }
+
+    @Transactional
+    public void upsertHolidays(@Positive @NotNull Integer year, @NotBlank String countryCode) {
     }
 
     private List<Long> getHolidayIds(List<Holiday> holidays) {
