@@ -154,34 +154,42 @@ public class HolidayService {
                 Map.of(country.getCountryCode(), country),
                 List.of(year)
         );
-        List<HolidayCountiesDto> holidayCountiesDtos = holidayCreationResult.holidayCountiesDtos();
-        List<HolidayTypesDto> holidayTypesDtos = holidayCreationResult.holidayTypesDtos();
 
         Map<String, Holiday> replacementHolidayMap =
                 toHolidayMapByUniqueKey(holidayCreationResult.holidays(), countryCode);
 
+        Map<String, Holiday> insertedOrUpdatedHolidayMap = new HashMap<>();
         Set<Holiday> insertedHolidays = new HashSet<>();
         for (Map.Entry<String, Holiday> entry : replacementHolidayMap.entrySet()) {
             String uniqueKey = entry.getKey();
             Holiday replacementHoliday = entry.getValue();
             if (oldHolidayMap.containsKey(uniqueKey)) {
-                oldHolidayMap.get(uniqueKey).update(
+                Holiday oldHoliday = oldHolidayMap.get(uniqueKey);
+                oldHoliday.update(
                         replacementHoliday.getName(),
                         replacementHoliday.isFixed(),
                         replacementHoliday.isGlobal(),
                         replacementHoliday.getLaunchYear()
                 );
-                // TODO: 업데이트될 type, county도 처리 필요
+                insertedOrUpdatedHolidayMap.put(uniqueKey, oldHoliday);
             } else {
                 insertedHolidays.add(replacementHoliday);
-                // TODO: 새로 삽입될 type, county도 처리 필요
+                insertedOrUpdatedHolidayMap.put(uniqueKey, replacementHoliday);
             }
+
         }
 
         holidayRepository.saveAll(insertedHolidays);
 
-        // TODO: 여기서 holidayTypeService, holidayCountyService 호출하여 inserted, updated 처리
-
+        // 새로 추가되거나 업데이트된 holiday와 연관된 holidayType, holidayCounty 처리
+        holidayCountyService.upsertHolidayCounties(
+                holidayCreationResult.holidayCountiesDtos(),
+                insertedOrUpdatedHolidayMap
+        );
+        holidayTypeService.upsertHolidayTypes(
+                holidayCreationResult.holidayTypesDtos(),
+                insertedOrUpdatedHolidayMap
+        );
 
         Set<Holiday> deletedHolidays = new HashSet<>();
         List<Long> deletedHolidayIds = new ArrayList<>();

@@ -91,4 +91,11 @@ public class HolidayCountyService {
 
         return holidayCountyMap;
     }
+
+    @Transactional
+    public void upsertHolidayCounties(
+            List<HolidayCountiesDto> holidayCountiesDtos,
+            Map<String, Holiday> holidayMap
+    ) {
+    }
 }

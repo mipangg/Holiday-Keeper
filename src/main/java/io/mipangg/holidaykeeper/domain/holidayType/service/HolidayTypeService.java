@@ -81,4 +81,11 @@ public class HolidayTypeService {
 
         return holidayTypeMap;
     }
+
+    @Transactional
+    public void upsertHolidayTypes(
+            List<HolidayTypesDto> holidayTypesDtos,
+            Map<String, Holiday> holidayMap
+    ) {
+    }
 }
