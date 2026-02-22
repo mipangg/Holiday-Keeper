@@ -154,6 +154,8 @@ public class HolidayService {
                 Map.of(country.getCountryCode(), country),
                 List.of(year)
         );
+        List<HolidayCountiesDto> holidayCountiesDtos = holidayCreationResult.holidayCountiesDtos();
+        List<HolidayTypesDto> holidayTypesDtos = holidayCreationResult.holidayTypesDtos();
 
         Map<String, Holiday> replacementHolidayMap =
                 toHolidayMapByUniqueKey(holidayCreationResult.holidays(), countryCode);
@@ -178,14 +180,23 @@ public class HolidayService {
 
         holidayRepository.saveAll(insertedHolidays);
 
+        // TODO: 여기서 holidayTypeService, holidayCountyService 호출하여 inserted, updated 처리
+
+
         Set<Holiday> deletedHolidays = new HashSet<>();
+        List<Long> deletedHolidayIds = new ArrayList<>();
         for (Map.Entry<String, Holiday> entry : oldHolidayMap.entrySet()) {
             if (!replacementHolidayMap.containsKey(entry.getKey())) {
-                deletedHolidays.add(entry.getValue());
+                Holiday targetHoliday = entry.getValue();
+                deletedHolidayIds.add(targetHoliday.getId());
+                deletedHolidays.add(targetHoliday);
             }
         }
 
-        // TODO: 삭제될 type, county도 처리 필요
+        // 업데이트 후 삭제된 holiday의 holidayType과 holidayCounty도 삭제
+        holidayTypeService.deleteHolidayTypes(deletedHolidayIds);
+        holidayCountyService.deleteHolidayCounties(deletedHolidayIds);
+
         holidayRepository.deleteAll(deletedHolidays);
 
     }
