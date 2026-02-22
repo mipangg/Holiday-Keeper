@@ -55,11 +55,25 @@ public class HolidayService {
 
         HolidayCreationResultDto holidayCreationResultDto =
                 prepareHolidayCreationResult(countries, getYears());
+        Map<String, Holiday> holidayMap = new HashMap<>();
+        holidayCreationResultDto.holidays().forEach(holiday ->
+                holidayMap.put(
+                        createUniqueKey(
+                                holiday.getDate(),
+                                holiday.getLocalName(),
+                                holiday.getCountry().getCountryCode()
+                        ),
+                        holiday
+                )
+        );
 
         holidayRepository.saveAll(holidayCreationResultDto.holidays());
 
         holidayTypeService.saveHolidayTypes(holidayCreationResultDto.holidayTypesDtos());
-        holidayCountyService.saveHolidayCounties(holidayCreationResultDto.holidayCountiesDtos());
+        holidayCountyService.saveHolidayCounties(
+                holidayCreationResultDto.holidayCountiesDtos(),
+                holidayMap
+        );
 
     }
 
@@ -178,16 +192,16 @@ public class HolidayService {
             String countryCode
     ) {
         Map<String, Holiday> holidayMap = new HashMap<>();
-        holidays.forEach(holiday -> {
+        holidays.forEach(holiday ->
             holidayMap.put(
                     createUniqueKey(
-                            holiday.getDate().toString(),
+                            holiday.getDate(),
                             holiday.getLocalName(),
                             countryCode
                     ),
                     holiday
-            );
-        });
+            )
+        );
         return holidayMap;
     }
 
@@ -217,7 +231,11 @@ public class HolidayService {
         List<HolidayCountiesDto> holidayCountiesDtos = new ArrayList<>();
 
         getExternalHolidays(countries.keySet(), years).forEach(ext -> {
-            String uniqueKey = createUniqueKey(ext.date(), ext.localName(), ext.countryCode());
+            String uniqueKey = createUniqueKey(
+                    LocalDate.parse(ext.date()),
+                    ext.localName(),
+                    ext.countryCode()
+            );
             if (!uniqueKeySet.contains(uniqueKey)) {
                 uniqueKeySet.add(uniqueKey);
                 Holiday holiday = Holiday.builder()
@@ -235,7 +253,7 @@ public class HolidayService {
                     holidayTypesDtos.add(new HolidayTypesDto(holiday, ext.types()));
                 }
                 if (!ext.global() && ext.counties() != null) {
-                    holidayCountiesDtos.add(new HolidayCountiesDto(holiday, ext.counties()));
+                    holidayCountiesDtos.add(new HolidayCountiesDto(uniqueKey, ext.counties()));
                 }
             }
         });
@@ -252,8 +270,8 @@ public class HolidayService {
                 .toList();
     }
 
-    private String createUniqueKey(String date, String localName, String countryCode) {
-        return date + "|" + localName + "|" + countryCode;
+    private String createUniqueKey(LocalDate date, String localName, String countryCode) {
+        return date.toString() + "|" + localName + "|" + countryCode;
     }
 
     private List<ExternalHolidayResponse> getExternalHolidays(

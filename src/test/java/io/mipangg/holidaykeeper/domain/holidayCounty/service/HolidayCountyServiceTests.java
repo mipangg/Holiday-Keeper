@@ -42,7 +42,7 @@ class HolidayCountyServiceTests {
         Holiday holidayCanada = genHolidayCanada();
         List<HolidayCountiesDto> holidayCountiesDtos = List.of(
                 new HolidayCountiesDto(
-                        holidayCanada,
+                        "2026-04-06|Easter Monday|CA",
                         List.of(
                                 "CA-AB",
                                 "CA-PE"
@@ -56,7 +56,10 @@ class HolidayCountyServiceTests {
 
         when(countyService.getOrCreateCounties(anySet())).thenReturn(counties);
 
-        holidayCountyService.saveHolidayCounties(holidayCountiesDtos);
+        holidayCountyService.saveHolidayCounties(
+                holidayCountiesDtos,
+                Map.of("2026-04-06|Easter Monday|CA", holidayCanada)
+        );
 
         verify(holidayCountyRepository).saveAll(anySet());
     }

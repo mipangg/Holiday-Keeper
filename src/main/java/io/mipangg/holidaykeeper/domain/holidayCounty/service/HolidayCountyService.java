@@ -4,9 +4,12 @@ import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
+import io.mipangg.holidaykeeper.domain.holiday.repository.HolidayRepository;
 import io.mipangg.holidaykeeper.domain.holidayCounty.dto.CountyElemDto;
 import io.mipangg.holidaykeeper.domain.holidayCounty.entity.HolidayCounty;
 import io.mipangg.holidaykeeper.domain.holidayCounty.repository.HolidayCountyRepository;
+import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
+import io.mipangg.holidaykeeper.global.exception.ErrorCode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,16 +29,31 @@ public class HolidayCountyService {
     private final CountyService countyService;
 
     @Transactional
-    public void saveHolidayCounties(List<HolidayCountiesDto> holidayCountiesDtos) {
+    public void saveHolidayCounties(
+            List<HolidayCountiesDto> holidayCountiesDtos,
+            Map<String, Holiday> holidayMap
+    ) {
+
         Set<CountyElemDto> countyElemDtos = new HashSet<>();
-        holidayCountiesDtos.forEach(dto ->
-                countyElemDtos.add(new CountyElemDto(dto.holiday().getCountry(), dto.counties()))
+        holidayCountiesDtos.forEach(dto -> {
+                    if (holidayMap.get(dto.uniqueKey()) == null) {
+                        throw new CustomLogicException(
+                                ErrorCode.NOT_FOUND,
+                                "uniqueKey와 일치하는 holiday를 찾을 수 없습니다."
+                        );
+                    }
+                    countyElemDtos.add(
+                            new CountyElemDto(
+                                    holidayMap.get(dto.uniqueKey()).getCountry(),
+                                    dto.counties())
+                    );
+                }
         );
         Map<String, County> counties = countyService.getOrCreateCounties(countyElemDtos);
 
         Set<HolidayCounty> holidayCounties = new HashSet<>();
         holidayCountiesDtos.forEach(dto -> {
-            Holiday holiday = dto.holiday();
+            Holiday holiday = holidayMap.get(dto.uniqueKey());
             dto.counties().forEach(countyCode ->
                     holidayCounties.add(
                             HolidayCounty.builder()
