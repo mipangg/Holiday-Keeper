@@ -69,7 +69,10 @@ public class HolidayService {
 
         holidayRepository.saveAll(holidayCreationResultDto.holidays());
 
-        holidayTypeService.saveHolidayTypes(holidayCreationResultDto.holidayTypesDtos());
+        holidayTypeService.saveHolidayTypes(
+                holidayCreationResultDto.holidayTypesDtos(),
+                holidayMap
+        );
         holidayCountyService.saveHolidayCounties(
                 holidayCreationResultDto.holidayCountiesDtos(),
                 holidayMap
@@ -250,7 +253,7 @@ public class HolidayService {
 
                 holidays.add(holiday);
                 if (ext.types() != null && !ext.types().isEmpty()) {
-                    holidayTypesDtos.add(new HolidayTypesDto(holiday, ext.types()));
+                    holidayTypesDtos.add(new HolidayTypesDto(uniqueKey, ext.types()));
                 }
                 if (!ext.global() && ext.counties() != null) {
                     holidayCountiesDtos.add(new HolidayCountiesDto(uniqueKey, ext.counties()));

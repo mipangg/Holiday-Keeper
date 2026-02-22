@@ -45,7 +45,7 @@ class HolidayTypeServiceTests {
 
         List<HolidayTypesDto> holidayTypesDtos = List.of(
                 new HolidayTypesDto(
-                        genHolidayBrazil(),
+                        "2026-02-16|Carnival|BR",
                         List.of("Public", "Bank")
                 )
         );
@@ -56,7 +56,10 @@ class HolidayTypeServiceTests {
 
         when(typeService.getOrCreateTypes(anySet())).thenReturn(types);
 
-        holidayTypeService.saveHolidayTypes(holidayTypesDtos);
+        holidayTypeService.saveHolidayTypes(
+                holidayTypesDtos,
+                Map.of("2026-02-16|Carnival|BR", genHolidayBrazil())
+        );
 
         verify(holidayTypeRepository).saveAll(anyList());
 

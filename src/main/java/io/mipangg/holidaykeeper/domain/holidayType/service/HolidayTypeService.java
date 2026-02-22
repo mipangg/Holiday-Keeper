@@ -6,6 +6,8 @@ import io.mipangg.holidaykeeper.domain.holidayType.entity.HolidayType;
 import io.mipangg.holidaykeeper.domain.holidayType.repository.HolidayTypeRepository;
 import io.mipangg.holidaykeeper.domain.type.entity.Type;
 import io.mipangg.holidaykeeper.domain.type.service.TypeService;
+import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
+import io.mipangg.holidaykeeper.global.exception.ErrorCode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,14 +27,23 @@ public class HolidayTypeService {
     private final TypeService typeService;
 
     @Transactional
-    public void saveHolidayTypes(List<HolidayTypesDto> holidayTypesDtos) {
+    public void saveHolidayTypes(
+            List<HolidayTypesDto> holidayTypesDtos,
+            Map<String, Holiday> holidayMap
+    ) {
         Set<String> typeNames = new HashSet<>();
         holidayTypesDtos.forEach(dto -> typeNames.addAll(dto.types()));
 
         List<HolidayType> holidayTypes = new ArrayList<>();
         Map<String, Type> types = typeService.getOrCreateTypes(typeNames);
         holidayTypesDtos.forEach(dto -> {
-            Holiday holiday = dto.holiday();
+            Holiday holiday = holidayMap.get(dto.uniqueKey());
+            if (holiday == null) {
+                throw new CustomLogicException(
+                        ErrorCode.NOT_FOUND,
+                        "uniqueKey와 일치하는 holiday를 찾을 수 없습니다."
+                );
+            }
             dto.types().forEach(type ->
                     holidayTypes.add(
                             HolidayType.builder()
