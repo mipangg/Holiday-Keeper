@@ -3,6 +3,7 @@ package io.mipangg.holidaykeeper.domain.holiday.service;
 import io.mipangg.holidaykeeper.domain.common.PageResponse;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCreationResultDto;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayListReadResponse;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayReadRequest;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayTypesDto;
@@ -50,40 +51,13 @@ public class HolidayService {
             throw new CustomLogicException(ErrorCode.CONFLICT, "Holiday 테이블에 이미 데이터가 존재합니다.");
         }
 
-        // counties가 존재할 경우 외부 api 호출 시 데이터가 중복되어 처리되는 문제를 처리하기 위해 uniqueKeySet 사용
-        Set<String> uniqueKeySet = new HashSet<>();
-        Set<Holiday> holidays = new HashSet<>();
-        List<HolidayTypesDto> holidayTypesDtos = new ArrayList<>();
-        List<HolidayCountiesDto> holidayCountiesDtos = new ArrayList<>();
+        HolidayCreationResultDto holidayCreationResultDto =
+                prepareHolidayCreationResult(countries, getYears());
 
-        getExternalHolidays(countries.keySet()).forEach(ext -> {
-            String uniqueKey = createUniqueKey(ext.date(), ext.localName(), ext.countryCode());
-            if (!uniqueKeySet.contains(uniqueKey)) {
-                uniqueKeySet.add(uniqueKey);
-                Holiday holiday = Holiday.builder()
-                        .date(LocalDate.parse(ext.date()))
-                        .localName(ext.localName())
-                        .name(ext.name())
-                        .fixed(ext.fixed())
-                        .global(ext.global())
-                        .launchYear(ext.launchYear())
-                        .country(countries.get(ext.countryCode()))
-                        .build();
+        holidayRepository.saveAll(holidayCreationResultDto.holidays());
 
-                holidays.add(holiday);
-                if (ext.types() != null && !ext.types().isEmpty()) {
-                    holidayTypesDtos.add(new HolidayTypesDto(holiday, ext.types()));
-                }
-                if (!ext.global() && ext.counties() != null) {
-                    holidayCountiesDtos.add(new HolidayCountiesDto(holiday, ext.counties()));
-                }
-            }
-        });
-
-        holidayRepository.saveAll(holidays);
-
-        holidayTypeService.saveHolidayTypes(holidayTypesDtos);
-        holidayCountyService.saveHolidayCounties(holidayCountiesDtos);
+        holidayTypeService.saveHolidayTypes(holidayCreationResultDto.holidayTypesDtos());
+        holidayCountyService.saveHolidayCounties(holidayCreationResultDto.holidayCountiesDtos());
 
     }
 
@@ -164,16 +138,61 @@ public class HolidayService {
         return date + "|" + localName + "|" + countryCode;
     }
 
-    private List<ExternalHolidayResponse> getExternalHolidays(Set<String> countyCodes) {
+    private List<ExternalHolidayResponse> getExternalHolidays(
+            Set<String> countyCodes,
+            List<Integer> years
+    ) {
         List<ExternalHolidayResponse> externalHolidays = new ArrayList<>();
 
-        for (int year : getYears()) {
+        for (int year : years) {
             for (String countryCode : countyCodes) {
                 externalHolidays.addAll(externalApiClient.getExternalHolidays(year, countryCode));
             }
         }
 
         return externalHolidays;
+    }
+
+    // 외부 api에서 공휴일 목록을 조회한 결과로 새 holiday 목록 생성
+    // 연관된 holidayType, holidayCounty 저장을 위해 필요한 holidayTypesDtos, holidayCountiesDtos 반환
+    private HolidayCreationResultDto prepareHolidayCreationResult(
+            Map<String, Country> countries,
+            List<Integer> years
+    ) {
+        // counties가 존재할 경우 외부 api 호출 시 데이터가 중복되어 처리되는 문제를 처리하기 위해 uniqueKeySet 사용
+        Set<String> uniqueKeySet = new HashSet<>();
+        Set<Holiday> holidays = new HashSet<>();
+        List<HolidayTypesDto> holidayTypesDtos = new ArrayList<>();
+        List<HolidayCountiesDto> holidayCountiesDtos = new ArrayList<>();
+
+        getExternalHolidays(countries.keySet(), years).forEach(ext -> {
+            String uniqueKey = createUniqueKey(ext.date(), ext.localName(), ext.countryCode());
+            if (!uniqueKeySet.contains(uniqueKey)) {
+                uniqueKeySet.add(uniqueKey);
+                Holiday holiday = Holiday.builder()
+                        .date(LocalDate.parse(ext.date()))
+                        .localName(ext.localName())
+                        .name(ext.name())
+                        .fixed(ext.fixed())
+                        .global(ext.global())
+                        .launchYear(ext.launchYear())
+                        .country(countries.get(ext.countryCode()))
+                        .build();
+
+                holidays.add(holiday);
+                if (ext.types() != null && !ext.types().isEmpty()) {
+                    holidayTypesDtos.add(new HolidayTypesDto(holiday, ext.types()));
+                }
+                if (!ext.global() && ext.counties() != null) {
+                    holidayCountiesDtos.add(new HolidayCountiesDto(holiday, ext.counties()));
+                }
+            }
+        });
+        return new HolidayCreationResultDto(
+                holidays,
+                holidayCountiesDtos,
+                holidayTypesDtos
+        );
     }
 
     private List<Integer> getYears() {
