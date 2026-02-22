@@ -57,7 +57,7 @@ public class HolidayService {
         List<HolidayCountiesDto> holidayCountiesDtos = new ArrayList<>();
 
         getExternalHolidays(countries.keySet()).forEach(ext -> {
-            String uniqueKey = createUniqueKey(ext);
+            String uniqueKey = createUniqueKey(ext.date(), ext.localName(), ext.countryCode());
             if (!uniqueKeySet.contains(uniqueKey)) {
                 uniqueKeySet.add(uniqueKey);
                 Holiday holiday = Holiday.builder()
@@ -160,8 +160,8 @@ public class HolidayService {
                 .toList();
     }
 
-    private String createUniqueKey(ExternalHolidayResponse ext) {
-        return ext.date() + "|" + ext.localName() + "|" + ext.countryCode();
+    private String createUniqueKey(String date, String localName, String countryCode) {
+        return date + "|" + localName + "|" + countryCode;
     }
 
     private List<ExternalHolidayResponse> getExternalHolidays(Set<String> countyCodes) {
