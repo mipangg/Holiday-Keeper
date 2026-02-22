@@ -1,6 +1,7 @@
 package io.mipangg.holidaykeeper.domain.holiday.service;
 
 import static io.mipangg.holidaykeeper.util.TestUtil.genCountries;
+import static io.mipangg.holidaykeeper.util.TestUtil.genCountryKorea;
 import static io.mipangg.holidaykeeper.util.TestUtil.genHolidayKorea;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,6 +26,7 @@ import io.mipangg.holidaykeeper.domain.holidayType.service.HolidayTypeService;
 import io.mipangg.holidaykeeper.external.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.external.service.ExternalApiClient;
 import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -179,6 +181,63 @@ class HolidayServiceTests {
 
         assertThat(result.getContent().getFirst().localName()).isEqualTo("새해");
         assertThat(result.getContent().getFirst().name()).isEqualTo("New Year's Day");
+    }
+
+    @Test
+    @DisplayName("특정 연도·국가의 공휴일 목록 재동기화 테스트")
+    void upsertHolidaysTest() {
+
+        int year = 2026;
+        Country country = genCountryKorea();
+        List<Holiday> oldHolidays = List.of(
+                Holiday.builder()
+                        .date(LocalDate.of(2026, 1, 1))
+                        .localName("새해")
+                        .name("New Year's Day")
+                        .country(country)
+                        .build(),
+                Holiday.builder()
+                        .date(LocalDate.of(2026, 2, 16))
+                        .localName("설날")
+                        .name("Lunar New Year")
+                        .country(country)
+                        .build()
+        );
+        List<ExternalHolidayResponse> externalHolidayResps = List.of(
+                new ExternalHolidayResponse(
+                        "2026-02-16",
+                        "설날(updated)",
+                        "Lunar New Year(updated)",
+                        "KR",
+                        false,
+                        true,
+                        null,
+                        null,
+                        List.of("Public")
+                ),
+                new ExternalHolidayResponse(
+                        "2026-03-01",
+                        "3·1절",
+                        "Independence Movement Day",
+                        "KR",
+                        false,
+                        true,
+                        null,
+                        null,
+                        List.of("Public")
+                )
+        );
+
+        when(holidayRepository.findByYearAndCountryCode(anyInt(), anyString()))
+                .thenReturn(oldHolidays);
+        when(externalApiClient.getExternalHolidays(anyInt(), anyString()))
+                .thenReturn(externalHolidayResps);
+
+        holidayService.upsertHolidays(year, country);
+
+        verify(holidayRepository).saveAll(anySet());
+        verify(holidayRepository).deleteAll(anySet());
+
     }
 
 }

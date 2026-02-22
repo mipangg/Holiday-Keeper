@@ -80,7 +80,8 @@ public class HolidayController {
             @PathVariable @Positive @NotNull Integer year,
             @PathVariable @NotBlank String countryCode
     ) {
-        holidayService.upsertHolidays(year, countryCode);
+        Country country = countryService.getCountryByCountryCode(countryCode);
+        holidayService.upsertHolidays(year, country);
     }
 
 

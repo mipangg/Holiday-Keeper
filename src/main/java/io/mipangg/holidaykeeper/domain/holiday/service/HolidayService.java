@@ -16,11 +16,10 @@ import io.mipangg.holidaykeeper.external.dto.ExternalHolidayResponse;
 import io.mipangg.holidaykeeper.external.service.ExternalApiClient;
 import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
 import io.mipangg.holidaykeeper.global.exception.ErrorCode;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,10 @@ public class HolidayService {
     @Transactional
     public void saveHolidays(Map<String, Country> countries) {
         if (holidayRepository.existsBy()) {
-            throw new CustomLogicException(ErrorCode.CONFLICT, "Holiday 테이블에 이미 데이터가 존재합니다.");
+            throw new CustomLogicException(
+                    ErrorCode.CONFLICT,
+                    "Holiday 테이블에 이미 데이터가 존재합니다."
+            );
         }
 
         HolidayCreationResultDto holidayCreationResultDto =
@@ -63,7 +65,8 @@ public class HolidayService {
 
     @Transactional
     public void deleteHolidays(Integer year, String countryCode) {
-        List<Holiday> targetHolidays = holidayRepository.findByYearAndCountryCode(year, countryCode);
+        List<Holiday> targetHolidays = holidayRepository
+                .findByYearAndCountryCode(year, countryCode);
         if (targetHolidays.isEmpty()) {
             throw new CustomLogicException(
                     ErrorCode.NOT_FOUND,
@@ -125,32 +128,80 @@ public class HolidayService {
     }
 
     @Transactional
-    public void upsertHolidays(@Positive @NotNull Integer year, @NotBlank String countryCode) {
-    }
+    public void upsertHolidays(Integer year, Country country) {
+        String countryCode = country.getCountryCode();
 
-    private List<Long> getHolidayIds(List<Holiday> holidays) {
-        return holidays.stream()
-                .map(Holiday::getId)
-                .toList();
-    }
+        Map<String, Holiday> oldHolidayMap = getHolidayMapByYearAndCountryCode(year, countryCode);
 
-    private String createUniqueKey(String date, String localName, String countryCode) {
-        return date + "|" + localName + "|" + countryCode;
-    }
+        HolidayCreationResultDto holidayCreationResult = prepareHolidayCreationResult(
+                Map.of(country.getCountryCode(), country),
+                List.of(year)
+        );
 
-    private List<ExternalHolidayResponse> getExternalHolidays(
-            Set<String> countyCodes,
-            List<Integer> years
-    ) {
-        List<ExternalHolidayResponse> externalHolidays = new ArrayList<>();
+        Map<String, Holiday> replacementHolidayMap =
+                toHolidayMapByUniqueKey(holidayCreationResult.holidays(), countryCode);
 
-        for (int year : years) {
-            for (String countryCode : countyCodes) {
-                externalHolidays.addAll(externalApiClient.getExternalHolidays(year, countryCode));
+        Set<Holiday> insertedHolidays = new HashSet<>();
+        for (Map.Entry<String, Holiday> entry : replacementHolidayMap.entrySet()) {
+            String uniqueKey = entry.getKey();
+            Holiday replacementHoliday = entry.getValue();
+            if (oldHolidayMap.containsKey(uniqueKey)) {
+                oldHolidayMap.get(uniqueKey).update(
+                        replacementHoliday.getName(),
+                        replacementHoliday.isFixed(),
+                        replacementHoliday.isGlobal(),
+                        replacementHoliday.getLaunchYear()
+                );
+                // TODO: 업데이트될 type, county도 처리 필요
+            } else {
+                insertedHolidays.add(replacementHoliday);
+                // TODO: 새로 삽입될 type, county도 처리 필요
             }
         }
 
-        return externalHolidays;
+        holidayRepository.saveAll(insertedHolidays);
+
+        Set<Holiday> deletedHolidays = new HashSet<>();
+        for (Map.Entry<String, Holiday> entry : oldHolidayMap.entrySet()) {
+            if (!replacementHolidayMap.containsKey(entry.getKey())) {
+                deletedHolidays.add(entry.getValue());
+            }
+        }
+
+        // TODO: 삭제될 type, county도 처리 필요
+        holidayRepository.deleteAll(deletedHolidays);
+
+    }
+
+    private Map<String, Holiday> toHolidayMapByUniqueKey(
+            Collection<Holiday> holidays,
+            String countryCode
+    ) {
+        Map<String, Holiday> holidayMap = new HashMap<>();
+        holidays.forEach(holiday -> {
+            holidayMap.put(
+                    createUniqueKey(
+                            holiday.getDate().toString(),
+                            holiday.getLocalName(),
+                            countryCode
+                    ),
+                    holiday
+            );
+        });
+        return holidayMap;
+    }
+
+    // key: uniqueKey, value: Holiday
+    private Map<String, Holiday> getHolidayMapByYearAndCountryCode(
+            Integer year,
+            String countryCode
+    ) {
+        List<Holiday> holidays = holidayRepository.findByYearAndCountryCode(year, countryCode);
+        if (holidays.isEmpty()) {
+            return Map.of();
+        }
+
+        return toHolidayMapByUniqueKey(holidays, countryCode);
     }
 
     // 외부 api에서 공휴일 목록을 조회한 결과로 새 holiday 목록 생성
@@ -195,6 +246,31 @@ public class HolidayService {
         );
     }
 
+    private List<Long> getHolidayIds(List<Holiday> holidays) {
+        return holidays.stream()
+                .map(Holiday::getId)
+                .toList();
+    }
+
+    private String createUniqueKey(String date, String localName, String countryCode) {
+        return date + "|" + localName + "|" + countryCode;
+    }
+
+    private List<ExternalHolidayResponse> getExternalHolidays(
+            Set<String> countyCodes,
+            List<Integer> years
+    ) {
+        List<ExternalHolidayResponse> externalHolidays = new ArrayList<>();
+
+        for (int year : years) {
+            for (String countryCode : countyCodes) {
+                externalHolidays.addAll(externalApiClient.getExternalHolidays(year, countryCode));
+            }
+        }
+
+        return externalHolidays;
+    }
+
     private List<Integer> getYears() {
         int years = holidayProperties.getFetchYears();
         int thisYear = LocalDate.now().getYear();
@@ -206,7 +282,7 @@ public class HolidayService {
         return result;
     }
 
-    private static void validateDateYear(Integer year, HolidayReadRequest request) {
+    private void validateDateYear(Integer year, HolidayReadRequest request) {
         if (request.from() != null && request.from().getYear() != year) {
             throw new CustomLogicException(ErrorCode.BAD_REQUEST, "잘못된 조회 시작 날짜 입니다.");
         }

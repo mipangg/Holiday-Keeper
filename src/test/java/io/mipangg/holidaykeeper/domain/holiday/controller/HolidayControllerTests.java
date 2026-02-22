@@ -1,5 +1,6 @@
 package io.mipangg.holidaykeeper.domain.holiday.controller;
 
+import static io.mipangg.holidaykeeper.util.TestUtil.genCountryKorea;
 import static io.mipangg.holidaykeeper.util.TestUtil.genHolidayListReadResponses;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -15,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.mipangg.holidaykeeper.domain.common.PageResponse;
+import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.service.CountryService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayListReadResponse;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayReadRequest;
@@ -107,12 +109,15 @@ class HolidayControllerTests {
 
         int year = 2026;
         String countryCode = "KR";
+        Country country = genCountryKorea();
+
+        when(countryService.getCountryByCountryCode(countryCode)).thenReturn(country);
 
         mockMvc.perform(put("/holidays/{year}/{countryCode}", year, countryCode))
                 .andExpect(status().isOk())
                 .andDo(print());
 
-        verify(holidayService).upsertHolidays(year, countryCode);
+        verify(holidayService).upsertHolidays(year, country);
 
     }
 

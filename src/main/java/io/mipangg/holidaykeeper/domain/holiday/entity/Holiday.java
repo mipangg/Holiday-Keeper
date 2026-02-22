@@ -68,4 +68,11 @@ public class Holiday extends BaseEntity {
     @Column(nullable = false)
     private boolean deleted;
 
+    public void update(String name, boolean fixed, boolean global, Integer launchYear) {
+        this.name = name;
+        this.fixed = fixed;
+        this.global = global;
+        this.launchYear = launchYear;
+    }
+
 }
