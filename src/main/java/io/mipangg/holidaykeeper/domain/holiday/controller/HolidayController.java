@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,8 +60,7 @@ public class HolidayController {
 
     @Operation(summary = "특정 연도·국가의 공휴일 목록 조회")
     @ApiResponse(responseCode = "200", description = "특정 연도·국가의 공휴일 목록 조회 성공")
-    @ApiResponse(responseCode = "400", description = "잘못된 요청")
-    @ApiResponse(responseCode = "404", description = "특정 연도·국가의 공휴일을 찾을 수 없음")
+    @ApiResponse(responseCode = "400", description = "잘못된 날짜로 조회 요청")
     @GetMapping("/{year}/{countryCode}")
     @ResponseStatus(HttpStatus.OK)
     public PageResponse<HolidayListReadResponse> readHolidays(
@@ -69,6 +69,19 @@ public class HolidayController {
             @Valid @ParameterObject HolidayReadRequest request
     ) {
         return holidayService.searchHolidays(year, countryCode, request);
+    }
+
+    @Operation(summary = "특정 연도·국가의 공휴일 목록 재동기화")
+    @ApiResponse(responseCode = "200", description = "특정 연도·국가의 공휴일 목록 재동기화 성공")
+    @ApiResponse(responseCode = "400", description = "잘못된 요청")
+    @PutMapping("/{year}/{countryCode}")
+    @ResponseStatus(HttpStatus.OK)
+    public void upsertHolidays(
+            @PathVariable @Positive @NotNull Integer year,
+            @PathVariable @NotBlank String countryCode
+    ) {
+        Country country = countryService.getCountryByCountryCode(countryCode);
+        holidayService.upsertHolidays(year, country);
     }
 
 

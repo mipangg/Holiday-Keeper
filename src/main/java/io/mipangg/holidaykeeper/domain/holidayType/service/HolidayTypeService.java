@@ -1,11 +1,19 @@
 package io.mipangg.holidaykeeper.domain.holidayType.service;
 
+import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
+import io.mipangg.holidaykeeper.domain.county.entity.County;
+import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayTypesDto;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
+import io.mipangg.holidaykeeper.domain.holidayCounty.dto.CountyElemDto;
+import io.mipangg.holidaykeeper.domain.holidayCounty.entity.HolidayCounty;
 import io.mipangg.holidaykeeper.domain.holidayType.entity.HolidayType;
 import io.mipangg.holidaykeeper.domain.holidayType.repository.HolidayTypeRepository;
 import io.mipangg.holidaykeeper.domain.type.entity.Type;
 import io.mipangg.holidaykeeper.domain.type.service.TypeService;
+import io.mipangg.holidaykeeper.global.exception.CustomLogicException;
+import io.mipangg.holidaykeeper.global.exception.ErrorCode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,14 +33,23 @@ public class HolidayTypeService {
     private final TypeService typeService;
 
     @Transactional
-    public void saveHolidayTypes(List<HolidayTypesDto> holidayTypesDtos) {
+    public void saveHolidayTypes(
+            List<HolidayTypesDto> holidayTypesDtos,
+            Map<String, Holiday> holidayMap
+    ) {
         Set<String> typeNames = new HashSet<>();
         holidayTypesDtos.forEach(dto -> typeNames.addAll(dto.types()));
 
         List<HolidayType> holidayTypes = new ArrayList<>();
         Map<String, Type> types = typeService.getOrCreateTypes(typeNames);
         holidayTypesDtos.forEach(dto -> {
-            Holiday holiday = dto.holiday();
+            Holiday holiday = holidayMap.get(dto.uniqueKey());
+            if (holiday == null) {
+                throw new CustomLogicException(
+                        ErrorCode.NOT_FOUND,
+                        "uniqueKey와 일치하는 holiday를 찾을 수 없습니다."
+                );
+            }
             dto.types().forEach(type ->
                     holidayTypes.add(
                             HolidayType.builder()
@@ -69,5 +86,76 @@ public class HolidayTypeService {
         });
 
         return holidayTypeMap;
+    }
+
+    @Transactional
+    public void upsertHolidayTypes(
+            List<HolidayTypesDto> requestHolidayTypesDtos,
+            Map<String, Holiday> requestHolidayMap
+    ) {
+        List<Long> holidayIds = new ArrayList<>();
+        requestHolidayTypesDtos.forEach(dto ->
+                holidayIds.add(requestHolidayMap.get(dto.uniqueKey()).getId())
+        );
+
+        // key: holidayId + "|" + type
+        Map<String, HolidayType> existingHolidayTypeMap = new HashMap<>();
+        holidayTypeRepository.findByHolidayIdIn(holidayIds).forEach(holidayType ->
+                existingHolidayTypeMap.put(
+                        createHolidayTypeUniqueKey(
+                                holidayType.getHoliday().getId(),
+                                holidayType.getType().getType()
+                        ),
+                        holidayType
+                )
+        );
+
+        Set<HolidayTypesDto> insertedHolidayTypesDtos = new HashSet<>();
+        Set<String> insertedTypeNames = new HashSet<>();
+        for (HolidayTypesDto dto : requestHolidayTypesDtos) {
+            Holiday holiday = requestHolidayMap.get(dto.uniqueKey());
+
+            Set<String> targetTypeNames = new HashSet<>();
+            dto.types().forEach(type -> {
+                if (!existingHolidayTypeMap.containsKey(
+                        createHolidayTypeUniqueKey(holiday.getId(), type)
+                )) {
+                    targetTypeNames.add(type);
+                }
+            });
+
+            if (!targetTypeNames.isEmpty()) {
+                insertedHolidayTypesDtos.add(
+                        new HolidayTypesDto(
+                                dto.uniqueKey(),
+                                targetTypeNames
+                        )
+                );
+                insertedTypeNames.addAll(targetTypeNames);
+            }
+        }
+
+        Set<HolidayType> insertedHolidayTypes= new HashSet<>();
+        // key: typeName
+        Map<String, Type> insertedTypesInHolidayType =
+                typeService.getOrCreateTypes(insertedTypeNames);
+
+        for (HolidayTypesDto dto : insertedHolidayTypesDtos) {
+            dto.types().forEach(type ->
+                insertedHolidayTypes.add(
+                        HolidayType.builder()
+                                .holiday(requestHolidayMap.get(dto.uniqueKey()))
+                                .type(insertedTypesInHolidayType.get(type))
+                                .build()
+                )
+            );
+        }
+
+        holidayTypeRepository.saveAll(insertedHolidayTypes);
+
+    }
+
+    private String createHolidayTypeUniqueKey(Long id, String type) {
+        return id + "|" + type;
     }
 }

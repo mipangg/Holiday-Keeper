@@ -1,13 +1,17 @@
 package io.mipangg.holidaykeeper.domain.holidayCounty.service;
 
+import static io.mipangg.holidaykeeper.util.TestUtil.genCountryCanada;
 import static io.mipangg.holidaykeeper.util.TestUtil.genCountyAb;
 import static io.mipangg.holidaykeeper.util.TestUtil.genCountyPe;
 import static io.mipangg.holidaykeeper.util.TestUtil.genHolidayCanada;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
 import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
@@ -36,13 +40,16 @@ class HolidayCountyServiceTests {
     @Mock
     private CountyService countyService;
 
+    @Mock
+    private CountryRepository countryRepository;
+
     @Test
     @DisplayName("holidayCounty 저장 기능 테스트")
     void saveHolidayCountiesTest() {
         Holiday holidayCanada = genHolidayCanada();
         List<HolidayCountiesDto> holidayCountiesDtos = List.of(
                 new HolidayCountiesDto(
-                        holidayCanada,
+                        "2026-04-06|Easter Monday|CA",
                         List.of(
                                 "CA-AB",
                                 "CA-PE"
@@ -56,7 +63,10 @@ class HolidayCountyServiceTests {
 
         when(countyService.getOrCreateCounties(anySet())).thenReturn(counties);
 
-        holidayCountyService.saveHolidayCounties(holidayCountiesDtos);
+        holidayCountyService.saveHolidayCounties(
+                holidayCountiesDtos,
+                Map.of("2026-04-06|Easter Monday|CA", holidayCanada)
+        );
 
         verify(holidayCountyRepository).saveAll(anySet());
     }
@@ -104,6 +114,53 @@ class HolidayCountyServiceTests {
         assertThat(result.get(2L)).hasSize(2);
         assertThat(result.get(2L).getFirst()).isEqualTo("CA-AB");
         assertThat(result.get(2L).getLast()).isEqualTo("CA-PE");
+    }
+
+    @Test
+    @DisplayName("upsert된 holiday와 연관된 holidayCounty 업데이트 기능 테스트")
+    void upsertHolidayCountiesTest() {
+
+        Holiday holiday = genHolidayCanada();
+        String uniqueKey = "2026-04-06|Easter Monday|CA";
+        List<HolidayCountiesDto> requestHolidayCountiesDtos = List.of(
+                new HolidayCountiesDto(
+                        uniqueKey,
+                        List.of(
+                                "CA-AB",
+                                "CA-PE"
+                        )
+                )
+        );
+        Map<String, Holiday> requestHolidayMap = Map.of(
+                uniqueKey, holiday
+        );
+        List<HolidayCounty> existingHolidayCounties = List.of(
+                HolidayCounty.builder()
+                .holiday(holiday)
+                .county(genCountyAb())
+                .build()
+        );
+        List<Country> requestCountries = List.of(
+                genCountryCanada()
+        );
+        Map<String, County> insertedCountiesInHolidayCounty = Map.of(
+                "CA-PE",
+                genCountyPe()
+        );
+
+        when(holidayCountyRepository.findByHolidayIdIn(anyList()))
+                .thenReturn(existingHolidayCounties);
+        when(countryRepository.findByCountryCodeIn(anySet())).thenReturn(requestCountries);
+        when(countyService.getOrCreateCounties(anySet()))
+                .thenReturn(insertedCountiesInHolidayCounty);
+
+        holidayCountyService.upsertHolidayCounties(
+                requestHolidayCountiesDtos,
+                requestHolidayMap
+        );
+
+        verify(holidayCountyRepository).saveAll(anySet());
+
     }
 
 }

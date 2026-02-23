@@ -17,6 +17,7 @@ public class TypeService {
 
     private final TypeRepository typeRepository;
 
+    // key: typeName
     @Transactional
     public Map<String, Type> getOrCreateTypes(Set<String> typeNames) {
         Map<String, Type> result = new HashMap<>();

@@ -45,7 +45,7 @@ class HolidayTypeServiceTests {
 
         List<HolidayTypesDto> holidayTypesDtos = List.of(
                 new HolidayTypesDto(
-                        genHolidayBrazil(),
+                        "2026-02-16|Carnival|BR",
                         List.of("Public", "Bank")
                 )
         );
@@ -56,7 +56,10 @@ class HolidayTypeServiceTests {
 
         when(typeService.getOrCreateTypes(anySet())).thenReturn(types);
 
-        holidayTypeService.saveHolidayTypes(holidayTypesDtos);
+        holidayTypeService.saveHolidayTypes(
+                holidayTypesDtos,
+                Map.of("2026-02-16|Carnival|BR", genHolidayBrazil())
+        );
 
         verify(holidayTypeRepository).saveAll(anyList());
 
@@ -113,6 +116,41 @@ class HolidayTypeServiceTests {
         assertThat(result.get(1L).getLast()).isEqualTo("Bank");
         assertThat(result.get(2L).getFirst()).isEqualTo("Public");
         assertThat(result.get(3L).getFirst()).isEqualTo("Public");
+    }
+
+    @Test
+    @DisplayName("upsert한 holiday와 연관된 holidayType upsert 기능 테스트")
+    void upsertHolidayTypesTest() {
+
+        Holiday holiday = genHolidayBrazil();
+        String uniqueKey = "2026-02-16|Carnaval|BR";
+        List<HolidayTypesDto> requestHolidayTypesDtos = List.of(
+                new HolidayTypesDto(
+                        uniqueKey,
+                        List.of("Public", "Bank")
+                )
+        );
+        Map<String, Holiday> requestHolidays = Map.of(
+                uniqueKey, holiday
+        );
+        List<HolidayType> exisingHolidayTypes = List.of(
+                HolidayType.builder()
+                        .holiday(holiday)
+                        .type(genTypePublic())
+                        .build()
+        );
+        Map<String, Type> insertedTypesInHolidayType = Map.of(
+                "Bank",
+                genTypeBank()
+        );
+
+        when(holidayTypeRepository.findByHolidayIdIn(anyList())).thenReturn(exisingHolidayTypes);
+        when(typeService.getOrCreateTypes(anySet())).thenReturn(insertedTypesInHolidayType);
+
+        holidayTypeService.upsertHolidayTypes(requestHolidayTypesDtos, requestHolidays);
+
+        verify(holidayTypeRepository).saveAll(anySet());
+
     }
 
 }

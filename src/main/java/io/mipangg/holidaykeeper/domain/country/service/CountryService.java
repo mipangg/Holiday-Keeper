@@ -45,4 +45,13 @@ public class CountryService {
         return countries;
     }
 
+    @Transactional(readOnly = true)
+    public Country getCountryByCountryCode(String countryCode) {
+        return countryRepository.findByCountryCode(countryCode)
+                .orElseThrow(() -> new CustomLogicException(
+                        ErrorCode.NOT_FOUND,
+                        "countryCode와 일치하는 국가를 찾을 수 없습니다.")
+                );
+    }
+
 }
