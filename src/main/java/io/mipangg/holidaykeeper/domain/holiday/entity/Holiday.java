@@ -69,10 +69,18 @@ public class Holiday extends BaseEntity {
     private boolean deleted;
 
     public void update(String name, boolean fixed, boolean global, Integer launchYear) {
-        this.name = name;
+        this.name = name + "(updated)";
         this.fixed = fixed;
         this.global = global;
         this.launchYear = launchYear;
+    }
+
+    public void delete() {
+        deleted = true;
+    }
+
+    public void revive() {
+        deleted = false;
     }
 
 }
