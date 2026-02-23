@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -125,32 +126,38 @@ class HolidayServiceTests {
     void deleteHolidaysTest() {
 
         int year = 2026;
+        LocalDate start = LocalDate.of(year, 1, 1);
+        LocalDate end = LocalDate.of(year, 12, 31);
         String countryCode = "KR";
 
         List<Holiday> targetHolidays = List.of(
                 genHolidayKorea()
         );
 
-        when(holidayRepository.findByYearAndCountryCode(year, countryCode))
+        when(holidayRepository.findByYearAndCountryCode(start, end, countryCode))
                 .thenReturn(targetHolidays);
+
+        assertThat(targetHolidays.getFirst().isDeleted()).isFalse();
 
         holidayService.deleteHolidays(year, countryCode);
 
-        verify(holidayRepository).findByYearAndCountryCode(year, countryCode);
-        verify(holidayRepository).deleteAll(targetHolidays);
-
+        verify(holidayRepository).findByYearAndCountryCode(start, end, countryCode);
+        assertThat(targetHolidays.getFirst().isDeleted()).isTrue();
     }
 
     @Test
     @DisplayName("삭제하려는 연도, 국가코드에 해당하는 공휴일 목록이 없을 때 404 발생 테스트")
     void deleteHolidays404FailTest() {
+        int year = 2026;
+        LocalDate start = LocalDate.of(year, 1, 1);
+        LocalDate end = LocalDate.of(year, 12, 31);
+        String countryCode = "KR";
 
-        when(holidayRepository.findByYearAndCountryCode(anyInt(), anyString()))
-                .thenReturn(List.of());
+        when(holidayRepository.findByYearAndCountryCode(start, end, countryCode)).thenReturn(List.of());
 
         assertThatThrownBy(
                 () -> {
-                    holidayService.deleteHolidays(anyInt(), anyString());
+                    holidayService.deleteHolidays(year, countryCode);
                 }
         ).isInstanceOf(CustomLogicException.class);
 
@@ -188,6 +195,9 @@ class HolidayServiceTests {
     void upsertHolidaysTest() {
 
         int year = 2026;
+        LocalDate start = LocalDate.of(year, 1, 1);
+        LocalDate end = LocalDate.of(year, 12, 31);
+
         Country country = genCountryKorea();
         List<Holiday> oldHolidays = List.of(
                 Holiday.builder()
@@ -228,7 +238,7 @@ class HolidayServiceTests {
                 )
         );
 
-        when(holidayRepository.findByYearAndCountryCode(anyInt(), anyString()))
+        when(holidayRepository.findByYearAndCountryCode(eq(start), eq(end), anyString()))
                 .thenReturn(oldHolidays);
         when(externalApiClient.getExternalHolidays(anyInt(), anyString()))
                 .thenReturn(externalHolidayResps);
@@ -236,7 +246,6 @@ class HolidayServiceTests {
         holidayService.upsertHolidays(year, country);
 
         verify(holidayRepository).saveAll(anySet());
-        verify(holidayRepository).deleteAll(anySet());
 
     }
 

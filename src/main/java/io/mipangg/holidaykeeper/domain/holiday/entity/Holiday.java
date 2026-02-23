@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -28,6 +29,12 @@ import org.hibernate.annotations.Where;
                 @UniqueConstraint(
                         name = "uk_holiday_date_local_name_country_id_deleted", // 제약조건 이름
                         columnNames = {"date", "local_name", "country_id", "deleted"} // 유니크 제약 걸 컬럼들
+                )
+        },
+        indexes = {
+                @Index(
+                        name = "idx_holiday_country_date_deleted",
+                        columnList = "country_id, date, deleted"
                 )
         }
 )
