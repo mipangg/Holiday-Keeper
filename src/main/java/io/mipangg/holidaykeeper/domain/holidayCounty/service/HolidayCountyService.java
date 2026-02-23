@@ -1,6 +1,9 @@
 package io.mipangg.holidaykeeper.domain.holidayCounty.service;
 
+import io.mipangg.holidaykeeper.domain.country.entity.Country;
+import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
 import io.mipangg.holidaykeeper.domain.county.entity.County;
+import io.mipangg.holidaykeeper.domain.county.repository.CountyRepository;
 import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;
@@ -26,6 +29,8 @@ public class HolidayCountyService {
     private final HolidayCountyRepository holidayCountyRepository;
 
     private final CountyService countyService;
+
+    private final CountryRepository countryRepository;
 
     @Transactional
     public void saveHolidayCounties(
@@ -94,8 +99,84 @@ public class HolidayCountyService {
 
     @Transactional
     public void upsertHolidayCounties(
-            List<HolidayCountiesDto> holidayCountiesDtos,
-            Map<String, Holiday> holidayMap
+            List<HolidayCountiesDto> requestHolidayCountiesDtos,
+            Map<String, Holiday> requestHolidayMap
     ) {
+        List<Long> holidayIds = new ArrayList<>();
+        requestHolidayCountiesDtos.forEach(dto ->
+                holidayIds.add(requestHolidayMap.get(dto.uniqueKey()).getId())
+        );
+
+        // key: holidayId + "|" + countyName
+        Map<String, HolidayCounty> existingHolidayCountyMap = new HashMap<>();
+        holidayCountyRepository.findByHolidayIdIn(holidayIds).forEach(holidayCounty ->
+            existingHolidayCountyMap.put(
+                    createHolidayCountyUniqueKey(
+                            holidayCounty.getHoliday().getId(),
+                            holidayCounty.getCounty().getCounty()
+                    ),
+                    holidayCounty
+            )
+        );
+
+        Set<String> countryCodes = new HashSet<>();
+        requestHolidayMap.values().forEach(holiday ->
+                countryCodes.add(holiday.getCountry().getCountryCode())
+        );
+        // key: countryCode
+        Map<String, Country> requestCountryMap = new HashMap<>();
+        countryRepository.findByCountryCodeIn(countryCodes).forEach(country ->
+                requestCountryMap.put(country.getCountryCode(), country)
+        );
+
+        Set<HolidayCountiesDto> insertedHolidayCountiesDtos = new HashSet<>();
+        Set<CountyElemDto> countyElemDtos = new HashSet<>();
+        for (HolidayCountiesDto dto : requestHolidayCountiesDtos) {
+            Holiday holiday = requestHolidayMap.get(dto.uniqueKey());
+
+            List<String> targetCounties = new ArrayList<>();
+            dto.counties().forEach(county -> {
+                if (!existingHolidayCountyMap.containsKey(
+                        createHolidayCountyUniqueKey(holiday.getId(), county)
+                )) {
+                    targetCounties.add(county);
+                }
+            });
+
+            if (!targetCounties.isEmpty()) {
+                countyElemDtos.add(
+                        new CountyElemDto(
+                                requestCountryMap.get(holiday.getCountry().getCountryCode()),
+                                targetCounties
+                        )
+                );
+                insertedHolidayCountiesDtos.add(
+                        new HolidayCountiesDto(dto.uniqueKey(), targetCounties)
+                );
+            }
+        }
+
+        Set<HolidayCounty> insertedHolidayCounties = new HashSet<>();
+        // key: countyName
+        Map<String, County> insertedCountiesInHolidayCounty =
+                countyService.getOrCreateCounties(countyElemDtos);
+
+        for (HolidayCountiesDto dto : insertedHolidayCountiesDtos) {
+            dto.counties().forEach(county ->
+                insertedHolidayCounties.add(
+                        HolidayCounty.builder()
+                                .holiday(requestHolidayMap.get(dto.uniqueKey()))
+                                .county(insertedCountiesInHolidayCounty.get(county))
+                                .build()
+                )
+            );
+        }
+
+        holidayCountyRepository.saveAll(insertedHolidayCounties);
+
+    }
+
+    private String createHolidayCountyUniqueKey(Long id, String county) {
+        return id + "|" + county;
     }
 }

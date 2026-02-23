@@ -4,9 +4,7 @@ import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.county.entity.County;
 import io.mipangg.holidaykeeper.domain.county.repository.CountyRepository;
 import io.mipangg.holidaykeeper.domain.holidayCounty.dto.CountyElemDto;
-import java.awt.print.Pageable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +20,7 @@ public class CountyService {
 
     private final CountyRepository countyRepository;
 
+    // key: countyName
     @Transactional
     public Map<String, County> getOrCreateCounties(Set<CountyElemDto> countyDtos) {
         Set<String> countyNames = new HashSet<>();
