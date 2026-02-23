@@ -1,10 +1,10 @@
 package io.mipangg.holidaykeeper.domain.holiday.dto;
 
-import java.util.List;
+import java.util.Collection;
 
 public record HolidayTypesDto(
         String uniqueKey,
-        List<String> types
+        Collection<String> types
 ) {
 
 }

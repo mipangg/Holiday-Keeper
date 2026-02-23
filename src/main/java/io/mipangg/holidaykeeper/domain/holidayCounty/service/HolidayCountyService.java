@@ -3,7 +3,6 @@ package io.mipangg.holidaykeeper.domain.holidayCounty.service;
 import io.mipangg.holidaykeeper.domain.country.entity.Country;
 import io.mipangg.holidaykeeper.domain.country.repository.CountryRepository;
 import io.mipangg.holidaykeeper.domain.county.entity.County;
-import io.mipangg.holidaykeeper.domain.county.repository.CountyRepository;
 import io.mipangg.holidaykeeper.domain.county.service.CountyService;
 import io.mipangg.holidaykeeper.domain.holiday.dto.HolidayCountiesDto;
 import io.mipangg.holidaykeeper.domain.holiday.entity.Holiday;

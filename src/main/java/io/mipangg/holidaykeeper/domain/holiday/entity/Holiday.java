@@ -26,8 +26,8 @@ import org.hibernate.annotations.Where;
         name = "holiday",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_holiday_date_local_name_country_id", // 제약조건 이름
-                        columnNames = {"date", "local_name", "country_id"} // 유니크 제약 걸 컬럼들
+                        name = "uk_holiday_date_local_name_country_id_deleted", // 제약조건 이름
+                        columnNames = {"date", "local_name", "country_id", "deleted"} // 유니크 제약 걸 컬럼들
                 )
         }
 )
@@ -69,7 +69,7 @@ public class Holiday extends BaseEntity {
     private boolean deleted;
 
     public void update(String name, boolean fixed, boolean global, Integer launchYear) {
-        this.name = name + "(updated)";
+        this.name = name;
         this.fixed = fixed;
         this.global = global;
         this.launchYear = launchYear;

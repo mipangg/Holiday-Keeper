@@ -118,4 +118,39 @@ class HolidayTypeServiceTests {
         assertThat(result.get(3L).getFirst()).isEqualTo("Public");
     }
 
+    @Test
+    @DisplayName("upsert한 holiday와 연관된 holidayType upsert 기능 테스트")
+    void upsertHolidayTypesTest() {
+
+        Holiday holiday = genHolidayBrazil();
+        String uniqueKey = "2026-02-16|Carnaval|BR";
+        List<HolidayTypesDto> requestHolidayTypesDtos = List.of(
+                new HolidayTypesDto(
+                        uniqueKey,
+                        List.of("Public", "Bank")
+                )
+        );
+        Map<String, Holiday> requestHolidays = Map.of(
+                uniqueKey, holiday
+        );
+        List<HolidayType> exisingHolidayTypes = List.of(
+                HolidayType.builder()
+                        .holiday(holiday)
+                        .type(genTypePublic())
+                        .build()
+        );
+        Map<String, Type> insertedTypesInHolidayType = Map.of(
+                "Bank",
+                genTypeBank()
+        );
+
+        when(holidayTypeRepository.findByHolidayIdIn(anyList())).thenReturn(exisingHolidayTypes);
+        when(typeService.getOrCreateTypes(anySet())).thenReturn(insertedTypesInHolidayType);
+
+        holidayTypeService.upsertHolidayTypes(requestHolidayTypesDtos, requestHolidays);
+
+        verify(holidayTypeRepository).saveAll(anySet());
+
+    }
+
 }
