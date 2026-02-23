@@ -82,8 +82,11 @@ public class HolidayService {
 
     @Transactional
     public void deleteHolidays(Integer year, String countryCode) {
-        List<Holiday> targetHolidays =
-                holidayRepository.findByYearAndCountryCode(year, countryCode);
+        List<Holiday> targetHolidays = holidayRepository.findByYearAndCountryCode(
+                getStartDate(year),
+                getEndDate(year),
+                countryCode
+        );
         if (targetHolidays.isEmpty()) {
             throw new CustomLogicException(
                     ErrorCode.NOT_FOUND,
@@ -236,7 +239,11 @@ public class HolidayService {
             Integer year,
             String countryCode
     ) {
-        List<Holiday> holidays = holidayRepository.findByYearAndCountryCode(year, countryCode);
+        List<Holiday> holidays = holidayRepository.findByYearAndCountryCode(
+                getStartDate(year),
+                getEndDate(year),
+                countryCode
+        );
         if (holidays.isEmpty()) {
             return Map.of();
         }
@@ -334,5 +341,13 @@ public class HolidayService {
 
     private String createUniqueKey(LocalDate date, String localName, String countryCode) {
         return date.toString() + "|" + localName + "|" + countryCode;
+    }
+
+    private LocalDate getStartDate(int year) {
+        return LocalDate.of(year, 1, 1);
+    }
+
+    private LocalDate getEndDate(int year) {
+        return LocalDate.of(year, 12, 31);
     }
 }
