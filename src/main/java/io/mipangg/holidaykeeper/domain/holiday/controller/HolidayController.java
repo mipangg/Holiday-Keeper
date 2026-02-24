@@ -74,6 +74,7 @@ public class HolidayController {
     @Operation(summary = "특정 연도·국가의 공휴일 목록 재동기화")
     @ApiResponse(responseCode = "200", description = "특정 연도·국가의 공휴일 목록 재동기화 성공")
     @ApiResponse(responseCode = "400", description = "잘못된 요청")
+    @ApiResponse(responseCode = "404", description = "특정 국가를 찾을 수 없음")
     @PutMapping("/{year}/{countryCode}")
     @ResponseStatus(HttpStatus.OK)
     public void upsertHolidays(
